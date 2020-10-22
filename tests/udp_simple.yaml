@@ -1,0 +1,77 @@
+# First basic config I'm making to show as an example on what the tool will be able to do.
+interface: "ens3"
+
+sequences:
+  initial:
+    # If we want to run other configs before this sequence (e.g. establishing a TCP handshake), use includes.
+    #includes:
+      #- /etc/sequencecfgs/tcp_handshake.yaml
+
+    # Type can either be 'send' for outgoing packets or 'recv' for receiving a response.
+    type: send
+
+    # Source MAC address (don't include to automatically retrieve the MAC address of 'interface').
+    #smac: ""
+
+    # Destination MAC address (don't include to automatically retrieve the MAC address of the default gateway).
+    #dmac: ""
+
+    # Source IP.
+    src-ip: "192.168.90.3"
+
+    # Destination IP.
+    dst-ip: "172.16.0.3"
+
+    # Additional IP options.
+    #ip:
+      #tos: 0
+      #ttl:
+        #fixed: 64
+        #maxttl: 128
+        #minttl: 64
+
+    # Layer 4 protocol (e.g. UDP, TCP, ICMP, etc).
+    protocol: udp
+
+    # Payload options
+    payload:
+      # Payload length options.
+      length:
+        fixed: 64 # 64 bytes in payload size.
+        #max: 1500
+        #min: 1500
+      
+      # The exact payload is hexadecimal. If this is specified, anything related to the payload length will be ignored.
+      #exact: "FF FF FF FF 49"
+    
+    # UDP specific options.
+    udp:
+      src-port: 27000 # Don't include this for randomized port.
+      dst-port: 27015 # Don't include this for randomized port.
+
+    # Amount of times to generate the packet.
+    count: 50
+
+    # How many threads to spawn to handle this sequence (use 0 for host's CPU count).
+    threads: 4
+
+    # Whether to calculate IP header's checksum (if disabled and you have checksum offload enabled on NIC, will result in higher performance).
+    #ipcsum: True
+
+    # Whether to calculate layer 4 header's checksum (e.g. UDP/TCP/ICMP).
+    #l4csum: True
+
+  second:
+    type: send
+    src-ip: "192.168.90.3"
+    dst-ip: "172.16.0.3"
+    protocol: udp
+    payload:
+      exact: "FF FF FF FF 49"
+    udp:
+      src-port: 27000
+      dst-port: 27015
+    count: 50
+    threads: 0
+    ipcsum: True
+    l4csum: True
