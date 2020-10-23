@@ -1,7 +1,7 @@
+#pragma once
+
 #include <inttypes.h>
 #include <linux/if_ether.h>
-
-#pragma once
 
 #define MAXINCLUDES 64
 #define MAXSEQUENCES 256

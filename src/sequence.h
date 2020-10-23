@@ -1,7 +1,7 @@
+#pragma once
+
 #include "pcktseq.h"
 #include "config.h"
-
-#pragma once
 
 #define MAXPCKTLEN 0xFFFF
 

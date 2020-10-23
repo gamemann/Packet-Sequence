@@ -1,8 +1,8 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
-
-#pragma once
 
 /**
  * Retrieves the Ethernet MAC of the host's default gateway and stores it in `mac` (uint8_t *).
