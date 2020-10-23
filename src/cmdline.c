@@ -8,6 +8,7 @@ static struct option longopts[] =
 {
     {"cfg", required_argument, NULL, 'c'},
     {"global", no_argument, NULL, 'g'},
+    {"verbose", no_argument, NULL, 'v'},
     {"help", no_argument, NULL, 'h'},
     {NULL, 0, NULL, 0}
 };
@@ -37,6 +38,11 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
 
                 case 'g':
                     cmd->global = atoi(optarg);
+
+                    break;
+
+                case 'v':
+                    cmd->verbose = atoi(optarg);
 
                     break;
 
