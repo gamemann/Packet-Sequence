@@ -37,17 +37,17 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
                     break;
 
                 case 'g':
-                    cmd->global = atoi(optarg);
+                    cmd->global = 1;
 
                     break;
 
                 case 'v':
-                    cmd->verbose = atoi(optarg);
+                    cmd->verbose = 1;
 
                     break;
 
                 case 'h':
-                    cmd->help = atoi(optarg);
+                    cmd->help = 1;
 
                     break;
 
