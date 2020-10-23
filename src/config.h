@@ -95,7 +95,9 @@ struct sequence
 struct config
 {
     // Device options.
-    char *interface;
+    const char *interface;
 
     struct sequence seq[MAXSEQUENCES];
 };
+
+int parseconfig(const char filename[], struct config *cfg);
