@@ -67,7 +67,7 @@ struct payload_opts
     const char *exact;
 };
 
-struct sequencecfg
+struct sequence
 {
     // General options.
     unsigned int type : 1;
@@ -97,5 +97,5 @@ struct config
     // Device options.
     char *interface;
 
-    struct sequencecfg seq[MAXSEQUENCES];
+    struct sequence seq[MAXSEQUENCES];
 };
