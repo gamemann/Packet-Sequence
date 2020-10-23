@@ -17,10 +17,10 @@ sequences:
     #dmac: ""
 
     # Source IP.
-    src-ip: "192.168.90.3"
+    srcip: "192.168.90.3"
 
     # Destination IP.
-    dst-ip: "172.16.0.3"
+    dstip: "172.16.0.3"
 
     # Additional IP options.
     #ip:
@@ -46,8 +46,8 @@ sequences:
     
     # UDP specific options.
     udp:
-      src-port: 27000 # Don't include this for randomized port.
-      dst-port: 27015 # Don't include this for randomized port.
+      srcport: 27000 # Don't include this for randomized port.
+      dstport: 27015 # Don't include this for randomized port.
 
     # Amount of times to generate the packet.
     count: 50
@@ -63,14 +63,14 @@ sequences:
 
   second:
     type: send
-    src-ip: "192.168.90.3"
-    dst-ip: "172.16.0.3"
+    srcip: "192.168.90.3"
+    dstip: "172.16.0.3"
     protocol: udp
     payload:
       exact: "FF FF FF FF 49"
     udp:
-      src-port: 27000
-      dst-port: 27015
+      srcport: 27000
+      dstport: 27015
     count: 50
     threads: 0
     ipcsum: True
