@@ -9,31 +9,33 @@ sequences:
 
     # Type can either be 'send' for outgoing packets or 'recv' for receiving a response.
     type: send
+    
+    # Ethernet header options.
+    #eth:
+      # Source MAC address (don't include to automatically retrieve the MAC address of 'interface').
+      #smac: ""
 
-    # Source MAC address (don't include to automatically retrieve the MAC address of 'interface').
-    #smac: ""
-
-    # Destination MAC address (don't include to automatically retrieve the MAC address of the default gateway).
-    #dmac: ""
-
-    # Source IP.
-    srcip: "192.168.90.3"
-
-    # Destination IP.
-    dstip: "172.16.0.3"
+      # Destination MAC address (don't include to automatically retrieve the MAC address of the default gateway).
+      #dmac: ""
 
     # Additional IP options.
     #ip:
+      # Source IP (Required).
+      srcip: "192.168.90.3"
+
+      # Destination IP (Required).
+      dstip: "172.16.0.3"
+
+      # Layer 4 protocol (e.g. UDP, TCP, ICMP, etc) (Required).
+      protocol: udp
+
       #tos: 0
       #ttl:
         #fixed: 64
         #maxttl: 128
         #minttl: 64
 
-    # Layer 4 protocol (e.g. UDP, TCP, ICMP, etc).
-    protocol: udp
-
-    # Payload options
+    # Payload options.
     payload:
       # Payload length options.
       length:
