@@ -9,6 +9,12 @@ sequences:
 
     # Type can either be 'send' for outgoing packets or 'recv' for receiving a response.
     type: send
+
+    # Amount of times to generate the packet/sequence.
+    count: 50
+
+    # How many threads to spawn to handle this sequence (use 0 for host's CPU count).
+    threads: 4
     
     # Ethernet header options.
     #eth:
@@ -19,7 +25,7 @@ sequences:
       #dmac: ""
 
     # Additional IP options.
-    #ip:
+    ip:
       # Source IP (Required).
       srcip: "192.168.90.3"
 
@@ -35,6 +41,17 @@ sequences:
         #maxttl: 128
         #minttl: 64
 
+      # Whether to calculate IP header's checksum (if disabled and you have checksum offload enabled on NIC, will result in higher performance).
+      #ipcsum: True
+    
+    # UDP specific options.
+    udp:
+      srcport: 27000 # Don't include this for randomized port.
+      dstport: 27015 # Don't include this for randomized port.
+
+    # Whether to calculate layer 4 header's checksum (e.g. UDP/TCP/ICMP).
+    #l4csum: True
+    
     # Payload options.
     payload:
       # Payload length options.
@@ -45,35 +62,19 @@ sequences:
       
       # The exact payload is hexadecimal. If this is specified, anything related to the payload length will be ignored.
       #exact: "FF FF FF FF 49"
-    
-    # UDP specific options.
-    udp:
-      srcport: 27000 # Don't include this for randomized port.
-      dstport: 27015 # Don't include this for randomized port.
-
-    # Amount of times to generate the packet.
-    count: 50
-
-    # How many threads to spawn to handle this sequence (use 0 for host's CPU count).
-    threads: 4
-
-    # Whether to calculate IP header's checksum (if disabled and you have checksum offload enabled on NIC, will result in higher performance).
-    #ipcsum: True
-
-    # Whether to calculate layer 4 header's checksum (e.g. UDP/TCP/ICMP).
-    #l4csum: True
 
   second:
     type: send
-    srcip: "192.168.90.3"
-    dstip: "172.16.0.3"
-    protocol: udp
-    payload:
-      exact: "FF FF FF FF 49"
+    count: 50
+    threads: 0
+    ip:
+      srcip: "192.168.90.3"
+      dstip: "172.16.0.3"
+      protocol: udp
+      ipcsum: True
     udp:
       srcport: 27000
       dstport: 27015
-    count: 50
-    threads: 0
-    ipcsum: True
     l4csum: True
+    payload:
+      exact: "FF FF FF FF 49"
