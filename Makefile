@@ -1,6 +1,6 @@
 CC = clang
 
-LDFLAGS += -lpthread
+LDFLAGS += -lpthread -lyaml
 
 objects += src/config.o src/cmdline.o src/sequence.o
 objects += src/pcktseq.o
