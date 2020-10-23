@@ -4,6 +4,7 @@
 #pragma once
 
 #define MAXINCLUDES 64
+#define MAXSEQUENCES 256
 
 struct eth_opts
 {
@@ -70,6 +71,8 @@ struct config
 {
     // Device options.
     char *interface;
+
+    struct sequence seq[MAXSEQUENCES];
 };
 
 struct sequence
