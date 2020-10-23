@@ -5,7 +5,7 @@
 #pragma once
 
 /**
- * Retrieves the Ethernet MAC of the host's default gateway and stores it in MAC (uint8_t *).
+ * Retrieves the Ethernet MAC of the host's default gateway and stores it in `mac` (uint8_t *).
  * 
  * @param mac The variable to store the MAC address in. Must be an uint8_t * array with the length of ETH_ALEN (6).
  * @return void
