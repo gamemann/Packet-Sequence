@@ -6,13 +6,13 @@
 #define MAXINCLUDES 64
 #define MAXSEQUENCES 256
 
-struct eth_opts
+struct eth_opt
 {
     uint8_t smac[ETH_ALEN];
     uint8_t dmac[ETH_ALEN];
 };
 
-struct ip_opts
+struct ip_opt
 {
     // Protocol (Required).
     uint8_t protocol;
@@ -33,7 +33,7 @@ struct ip_opts
     unsigned int csum : 1;
 };
 
-struct tcp_opts
+struct tcp_opt
 {
     // TCP flags.
     unsigned int syn : 1;
@@ -46,19 +46,19 @@ struct tcp_opts
     unsigned int usetcpsocket : 1;
 };
 
-struct udp_opts
+struct udp_opt
 {
     uint16_t srcport;
     uint16_t dstport;
 };
 
-struct icmp_opts
+struct icmp_opt
 {
     uint8_t code;
     uint8_t type;
 };
 
-struct payload_opts
+struct payload_opt
 {
     uint16_t minlen;
     uint16_t maxlen;
@@ -77,19 +77,19 @@ struct sequence
     const char *includes[MAXINCLUDES];
 
     // Ethernet options.
-    struct eth_opts eth;
+    struct eth_opt eth;
 
     // IP options.
-    struct ip_opts ip;
+    struct ip_opt ip;
 
     // Layer 4 options.
-    struct tcp_opts tcp;
-    struct udp_opts udp;
-    struct icmp_opts icmp;
+    struct tcp_opt tcp;
+    struct udp_opt udp;
+    struct icmp_opt icmp;
     unsigned int l4csum : 1;
 
     // Payload options.
-    struct payload_opts payload;
+    struct payload_opt payload;
 };
 
 struct config
