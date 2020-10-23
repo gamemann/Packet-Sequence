@@ -41,6 +41,8 @@ struct tcp_opts
     unsigned int ack : 1;
     unsigned int rst : 1;
     unsigned int urg : 1;
+
+    unsigned int usetcpsocket : 1;
 };
 
 struct udp_opts
