@@ -27,7 +27,7 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
 
     while (optind < argc)
     {
-        if ((c = getopt_long(argc, argv, "c:gh", longopts, NULL)) != -1)
+        if ((c = getopt_long(argc, argv, "c:ghv", longopts, NULL)) != -1)
         {
             switch (c)
             {
