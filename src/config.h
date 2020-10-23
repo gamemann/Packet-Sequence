@@ -18,8 +18,8 @@ struct ip_opt
     uint8_t protocol;
 
     // Source and destination addresses (Required).
-    const char *srcip;
-    const char *dstip;
+    char *srcip;
+    char *dstip;
 
     // Type of Service.
     uint8_t tos;
@@ -64,7 +64,7 @@ struct payload_opt
     uint16_t maxlen;
     uint16_t len;
 
-    const char *exact;
+    char *exact;
 };
 
 struct sequence
@@ -74,7 +74,7 @@ struct sequence
     unsigned int block : 1;
     uint64_t count;
     uint16_t threads;
-    const char *includes[MAXINCLUDES];
+    char *includes[MAXINCLUDES];
 
     // Ethernet options.
     struct eth_opt eth;
@@ -95,7 +95,7 @@ struct sequence
 struct config
 {
     // Device options.
-    const char *interface;
+    char *interface;
 
     struct sequence seq[MAXSEQUENCES];
 };
