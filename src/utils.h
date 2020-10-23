@@ -38,7 +38,7 @@ void getgwmac(uint8_t *mac)
  * @return A 16-bit integer (uint16_t).
  * @note If you're trying to return an integer within the 8-bit range, I'd recommend casting as uint8_t or similar.
  */
-uint16_t randNum(uint16_t min, uint16_t max, unsigned int seed)
+uint16_t randnum(uint16_t min, uint16_t max, unsigned int seed)
 {
     return (rand_r(&seed) % (max - min + 1)) + min;
 }
