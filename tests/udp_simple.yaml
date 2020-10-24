@@ -7,8 +7,8 @@ sequences:
     #includes:
       #- /etc/sequencecfgs/tcp_handshake.yaml
 
-    # Type can either be 'send' for outgoing packets or 'recv' for receiving a response.
-    type: send
+    # If set to true, will send outgoing packets. Otherwise, will receive.
+    send: True
 
     # Amount of times to generate the packet/sequence.
     count: 50
