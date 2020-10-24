@@ -77,6 +77,7 @@ struct sequence
     uint64_t count;
     uint16_t threads;
     char *includes[MAXINCLUDES];
+    uint16_t includecount;
 
     // Ethernet options.
     struct eth_opt eth;
