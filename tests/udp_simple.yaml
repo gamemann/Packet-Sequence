@@ -64,7 +64,7 @@ sequences:
       #exact: "FF FF FF FF 49"
 
   second:
-    type: send
+    send: true
     count: 50
     threads: 0
     ip:
