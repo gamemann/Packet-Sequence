@@ -443,13 +443,16 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             // Check for count.
                             if (!strcmp(prevkey, "count"))
                             {   
+                                
                                 cfg->seq[*seqnum].count = atoi((const char *)ev.data.scalar.value);
+
+                                fprintf(stdout, "Setting count to %li on sequence %d\n", cfg->seq[*seqnum].count, *seqnum);
                             }
 
                             // Check for threads.
                             if (!strcmp(prevkey, "threads"))
                             {
-                                cfg->seq[*seqnum].count = atoi((const char *)ev.data.scalar.value);
+                                cfg->seq[*seqnum].threads = atoi((const char *)ev.data.scalar.value);
                             }
                         }
                     }
