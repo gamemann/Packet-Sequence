@@ -231,7 +231,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                 
                 break;
             
-            
             case YAML_SCALAR_EVENT:
                 // We want to check keys and values within the scalar (typically `key: value`).
 
