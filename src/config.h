@@ -72,7 +72,7 @@ struct payload_opt
 struct sequence
 {
     // General options.
-    unsigned int type : 1;
+    unsigned int send : 1;
     unsigned int block : 1;
     uint64_t count;
     uint16_t threads;
