@@ -460,7 +460,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         // If we're only parsing sequences, break.
                         if (onlyseq)
                         {
-                            break;
+                            continue;
                         }
 
                         // We should be in the global scope. Check for things like the interface.
