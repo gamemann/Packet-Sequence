@@ -2,7 +2,7 @@ CC = clang
 
 LDFLAGS += -lpthread -lyaml
 
-objects += src/config.o src/cmdline.o src/sequence.o
+objects += src/config.o src/cmdline.o src/sequence.o src/utils.o
 objects += src/pcktseq.o
 
 all: libyaml pcktsequence
