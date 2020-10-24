@@ -3,19 +3,21 @@
 #include <inttypes.h>
 #include <linux/if_ether.h>
 
+#include "pcktseq.h"
+
 #define MAXINCLUDES 64
 #define MAXSEQUENCES 256
 
 struct eth_opt
 {
-    uint8_t smac[ETH_ALEN];
-    uint8_t dmac[ETH_ALEN];
+    char *smac;
+    char *dmac;
 };
 
 struct ip_opt
 {
     // Protocol (Required).
-    uint8_t protocol;
+    char *protocol;
 
     // Source and destination addresses (Required).
     char *srcip;
@@ -100,4 +102,4 @@ struct config
     struct sequence seq[MAXSEQUENCES];
 };
 
-int parseconfig(const char filename[], struct config *cfg);
+int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seqnum);
