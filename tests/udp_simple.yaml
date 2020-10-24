@@ -42,7 +42,7 @@ sequences:
         #minttl: 64
 
       # Whether to calculate IP header's checksum (if disabled and you have checksum offload enabled on NIC, will result in higher performance).
-      #ipcsum: True
+      #csum: True
     
     # UDP specific options.
     udp:
@@ -71,7 +71,7 @@ sequences:
       srcip: "192.168.90.3"
       dstip: "172.16.0.3"
       protocol: udp
-      ipcsum: True
+      csum: True
     udp:
       srcport: 27000
       dstport: 27015
