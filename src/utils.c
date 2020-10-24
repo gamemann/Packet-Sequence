@@ -50,7 +50,7 @@ uint16_t randnum(uint16_t min, uint16_t max, unsigned int seed)
  */
 char *lowerstr(char *str) 
 {
-    for(char *p = str; *p; p++) 
+    for (char *p = str; *p; p++) 
     {
         *p = tolower(*p);
     }
