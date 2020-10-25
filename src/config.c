@@ -388,6 +388,12 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             {
                                 cfg->seq[*seqnum].tcp.urg = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
                             }
+
+                            // TCP cooked Linux socket.
+                            if (!strcmp(prevkey, "usetcpsocket"))
+                            {
+                                cfg->seq[*seqnum].tcp.usetcpsocket = (!strcmp(lowerstr((char *)ev.data.scalar.value), "True")) ? 1 : 0;
+                            }
                         }
                         else if (inicmp)
                         {
