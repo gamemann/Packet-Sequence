@@ -1,5 +1,7 @@
 #pragma once
 
+#include  <inttypes.h>
+
 #include "pcktseq.h"
 #include "config.h"
 
@@ -9,6 +11,7 @@ struct threadinfo
 {
     const char device[MAXNAMELEN];
     struct sequence seq;
+    uint16_t seqcount;
 };
 
 void seqsend(const char *interface, struct sequence seq);
