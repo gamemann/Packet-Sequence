@@ -462,8 +462,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             {   
                                 
                                 cfg->seq[*seqnum].count = atoi((const char *)ev.data.scalar.value);
-
-                                fprintf(stdout, "Setting count to %li on sequence %d\n", cfg->seq[*seqnum].count, *seqnum);
                             }
 
                             // Check for threads.
