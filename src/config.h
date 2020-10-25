@@ -37,6 +37,9 @@ struct ip_opt
 
 struct tcp_opt
 {
+    uint16_t srcport;
+    uint16_t dstport;
+    
     // TCP flags.
     unsigned int syn : 1;
     unsigned int psh : 1;
