@@ -92,7 +92,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                     if (inip)
                     {
                         // Now check if we're entering the TTL mapping.
-                        if (!strcmp(prevkey, "ttl"))
+                        if (prevkey != NULL && !strcmp(prevkey, "ttl"))
                         {
                             inttl = 1;
                         }
@@ -100,39 +100,39 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
 
                     if (inpayload)
                     {
-                        if (!strcmp(prevkey, "length"))
+                        if (prevkey != NULL && !strcmp(prevkey, "length"))
                         {
                             inlength = 1;
                         }
                     }
 
                     // Check for additional mappings inside a single sequence.
-                    if (!ineth && !strcmp(prevkey, "eth"))
+                    if (!ineth && prevkey != NULL && !strcmp(prevkey, "eth"))
                     {
                         ineth = 1;
                     }
 
-                    if (!inip && !strcmp(prevkey, "ip"))
+                    if (!inip && prevkey != NULL && !strcmp(prevkey, "ip"))
                     {
                         inip = 1;
                     }
 
-                    if (!inudp && !strcmp(prevkey, "udp"))
+                    if (!inudp && prevkey != NULL && !strcmp(prevkey, "udp"))
                     {
                         inudp = 1;
                     }
 
-                    if (!intcp && !strcmp(prevkey, "tcp"))
+                    if (!intcp && prevkey != NULL && !strcmp(prevkey, "tcp"))
                     {
                         intcp = 1;
                     }
 
-                    if (!inicmp && !strcmp(prevkey, "icmp"))
+                    if (!inicmp && prevkey != NULL && !strcmp(prevkey, "icmp"))
                     {
                         inicmp = 1;
                     }
 
-                    if (!inpayload && !strcmp(prevkey, "payload"))
+                    if (!inpayload && prevkey != NULL && !strcmp(prevkey, "payload"))
                     {
                         inpayload = 1;
                     }
@@ -231,12 +231,12 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                 // Check for includes or ranges.
                 if (insequence)
                 {
-                    if (!inincludes && !strcmp(prevkey, "includes"))
+                    if (!inincludes && prevkey != NULL && !strcmp(prevkey, "includes"))
                     {
                         inincludes = 1;
                     }
 
-                    if (!inranges && inip && !strcmp(prevkey, "ranges"))
+                    if (!inranges && inip && prevkey != NULL && !strcmp(prevkey, "ranges"))
                     {
                         inranges = 1;
                     }
@@ -285,13 +285,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         else if (ineth)
                         {
                             // Check for source MAC.
-                            if (!strcmp(prevkey, "smac"))
+                            if (prevkey != NULL && !strcmp(prevkey, "smac"))
                             {
                                 cfg->seq[*seqnum].eth.smac = strdup((const char *)ev.data.scalar.value);
                             }
 
                             // Check for destination MAC.
-                            if (!strcmp(prevkey, "dmac"))
+                            if (prevkey != NULL && !strcmp(prevkey, "dmac"))
                             {
                                 cfg->seq[*seqnum].eth.dmac = strdup((const char *)ev.data.scalar.value);
                             }
@@ -302,19 +302,19 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             if (inttl)
                             {
                                 // Check for fixed TTL.
-                                if (!strcmp(prevkey, "fixed"))
+                                if (prevkey != NULL && !strcmp(prevkey, "fixed"))
                                 {
                                     cfg->seq[*seqnum].ip.ttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for min TTL.
-                                if (!strcmp(prevkey, "minttl"))
+                                if (prevkey != NULL && !strcmp(prevkey, "minttl"))
                                 {
                                     cfg->seq[*seqnum].ip.minttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for max TTL.
-                                if (!strcmp(prevkey, "maxttl"))
+                                if (prevkey != NULL && !strcmp(prevkey, "maxttl"))
                                 {
                                     cfg->seq[*seqnum].ip.maxttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
@@ -331,31 +331,31 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 // Look for all other IP options.
 
                                 // Check for source IP.
-                                if (!strcmp(prevkey, "srcip"))
+                                if (prevkey != NULL && !strcmp(prevkey, "srcip"))
                                 {
                                     cfg->seq[*seqnum].ip.srcip = strdup((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for destination IP.
-                                if (!strcmp(prevkey, "dstip"))
+                                if (prevkey != NULL && !strcmp(prevkey, "dstip"))
                                 {
                                     cfg->seq[*seqnum].ip.dstip = strdup((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for protocol.
-                                if (!strcmp(prevkey, "protocol"))
+                                if (prevkey != NULL && !strcmp(prevkey, "protocol"))
                                 {
                                     cfg->seq[*seqnum].ip.protocol = strdup((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for TOS.
-                                if (!strcmp(prevkey, "tos"))
+                                if (prevkey != NULL && !strcmp(prevkey, "tos"))
                                 {
                                     cfg->seq[*seqnum].ip.tos = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for IP checksum calculation.
-                                if (!strcmp(prevkey, "csum"))
+                                if (prevkey != NULL && !strcmp(prevkey, "csum"))
                                 {
                                     cfg->seq[*seqnum].ip.csum = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                                 }
@@ -364,13 +364,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         else if (inudp)
                         {
                             // Check for source port.
-                            if (!strcmp(prevkey, "srcport"))
+                            if (prevkey != NULL && !strcmp(prevkey, "srcport"))
                             {
                                 cfg->seq[*seqnum].udp.srcport = (uint16_t) atoi((const char *)ev.data.scalar.value);
                             }
 
                             // Check for destination port.
-                            if (!strcmp(prevkey, "dstport"))
+                            if (prevkey != NULL && !strcmp(prevkey, "dstport"))
                             {
                                 cfg->seq[*seqnum].udp.dstport = (uint16_t) atoi((const char *)ev.data.scalar.value);
                             }
@@ -378,55 +378,55 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         else if (intcp)
                         {
                             // Check for source port.
-                            if (!strcmp(prevkey, "srcport"))
+                            if (prevkey != NULL && !strcmp(prevkey, "srcport"))
                             {
                                 cfg->seq[*seqnum].tcp.srcport = (uint16_t) atoi((const char *)ev.data.scalar.value);
                             }
 
                             // Check for destination port.
-                            if (!strcmp(prevkey, "dstport"))
+                            if (prevkey != NULL && !strcmp(prevkey, "dstport"))
                             {
                                 cfg->seq[*seqnum].tcp.dstport = (uint16_t) atoi((const char *)ev.data.scalar.value);
                             }
 
                             // Check for SYN flag.
-                            if (!strcmp(prevkey, "syn"))
+                            if (prevkey != NULL && !strcmp(prevkey, "syn"))
                             {
                                 cfg->seq[*seqnum].tcp.syn = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for ACK flag.
-                            if (!strcmp(prevkey, "ack"))
+                            if (prevkey != NULL && !strcmp(prevkey, "ack"))
                             {
                                 cfg->seq[*seqnum].tcp.ack = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for PSH flag.
-                            if (!strcmp(prevkey, "psh"))
+                            if (prevkey != NULL && !strcmp(prevkey, "psh"))
                             {
                                 cfg->seq[*seqnum].tcp.psh = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for RST flag.
-                            if (!strcmp(prevkey, "rst"))
+                            if (prevkey != NULL && !strcmp(prevkey, "rst"))
                             {
                                 cfg->seq[*seqnum].tcp.rst = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for FIN flag.
-                            if (!strcmp(prevkey, "fin"))
+                            if (prevkey != NULL && !strcmp(prevkey, "fin"))
                             {
                                 cfg->seq[*seqnum].tcp.fin = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for URG flag.
-                            if (!strcmp(prevkey, "urg"))
+                            if (prevkey != NULL && !strcmp(prevkey, "urg"))
                             {
                                 cfg->seq[*seqnum].tcp.urg = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // TCP cooked Linux socket.
-                            if (!strcmp(prevkey, "usetcpsocket"))
+                            if (prevkey != NULL && !strcmp(prevkey, "usetcpsocket"))
                             {
                                 cfg->seq[*seqnum].tcp.usetcpsocket = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
@@ -434,13 +434,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         else if (inicmp)
                         {
                             // Check for code.
-                            if (!strcmp(prevkey, "code"))
+                            if (prevkey != NULL && !strcmp(prevkey, "code"))
                             {
                                 cfg->seq[*seqnum].icmp.code = (uint8_t) atoi((const char *)ev.data.scalar.value);
                             }
 
                             // Check for type.
-                            if (!strcmp(prevkey, "type"))
+                            if (prevkey != NULL && !strcmp(prevkey, "type"))
                             {
                                 cfg->seq[*seqnum].icmp.type = (uint8_t) atoi((const char *)ev.data.scalar.value);
                             }
@@ -451,19 +451,19 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             if (inlength)
                             {
                                 // Check for fixed.
-                                if (!strcmp(prevkey, "fixed"))
+                                if (prevkey != NULL && !strcmp(prevkey, "fixed"))
                                 {
                                     cfg->seq[*seqnum].payload.len = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for min length.
-                                if (!strcmp(prevkey, "min"))
+                                if (prevkey != NULL && !strcmp(prevkey, "min"))
                                 {
                                     cfg->seq[*seqnum].payload.minlen = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for max length.
-                                if (!strcmp(prevkey, "min"))
+                                if (prevkey != NULL && !strcmp(prevkey, "min"))
                                 {
                                     cfg->seq[*seqnum].payload.minlen = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
@@ -471,7 +471,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             else
                             {
                                 // Check for exact payload.
-                                if (!strcmp(prevkey, "exact"))
+                                if (prevkey != NULL && !strcmp(prevkey, "exact"))
                                 {
                                     cfg->seq[*seqnum].payload.exact = strdup((const char *)ev.data.scalar.value);
                                 }
@@ -482,26 +482,26 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             // Check for other sequence key => values.
 
                             // Check for send.
-                            if (!strcmp(prevkey, "send"))
+                            if (prevkey != NULL && !strcmp(prevkey, "send"))
                             {
                                 cfg->seq[*seqnum].send = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for block.
-                            if (!strcmp(prevkey, "block"))
+                            if (prevkey != NULL && !strcmp(prevkey, "block"))
                             {
                                 cfg->seq[*seqnum].block = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for count.
-                            if (!strcmp(prevkey, "count"))
+                            if (prevkey != NULL && !strcmp(prevkey, "count"))
                             {   
                                 
                                 cfg->seq[*seqnum].count = atoi((const char *)ev.data.scalar.value);
                             }
 
                             // Check for threads.
-                            if (!strcmp(prevkey, "threads"))
+                            if (prevkey != NULL && !strcmp(prevkey, "threads"))
                             {
                                 cfg->seq[*seqnum].threads = atoi((const char *)ev.data.scalar.value);
                             }
@@ -516,7 +516,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         }
 
                         // We should be in the global scope. Check for things like the interface.
-                        if (!strcmp(prevkey, "interface"))
+                        if (prevkey != NULL && !strcmp(prevkey, "interface"))
                         {
                             cfg->interface = strdup((const char *)ev.data.scalar.value);
                         }
