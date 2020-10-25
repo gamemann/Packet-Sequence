@@ -321,7 +321,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 // Check for IP checksum calculation.
                                 if (!strcmp(prevkey, "csum"))
                                 {
-                                    cfg->seq[*seqnum].ip.csum = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
+                                    cfg->seq[*seqnum].ip.csum = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                                 }
                             }
                         }
@@ -356,43 +356,43 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             // Check for SYN flag.
                             if (!strcmp(prevkey, "syn"))
                             {
-                                cfg->seq[*seqnum].tcp.syn = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
+                                cfg->seq[*seqnum].tcp.syn = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for ACK flag.
                             if (!strcmp(prevkey, "ack"))
                             {
-                                cfg->seq[*seqnum].tcp.ack = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
+                                cfg->seq[*seqnum].tcp.ack = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for PSH flag.
                             if (!strcmp(prevkey, "psh"))
                             {
-                                cfg->seq[*seqnum].tcp.psh = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
+                                cfg->seq[*seqnum].tcp.psh = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for RST flag.
                             if (!strcmp(prevkey, "rst"))
                             {
-                                cfg->seq[*seqnum].tcp.rst = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
+                                cfg->seq[*seqnum].tcp.rst = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for FIN flag.
                             if (!strcmp(prevkey, "fin"))
                             {
-                                cfg->seq[*seqnum].tcp.fin = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
+                                cfg->seq[*seqnum].tcp.fin = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // Check for URG flag.
                             if (!strcmp(prevkey, "urg"))
                             {
-                                cfg->seq[*seqnum].tcp.urg = (!strcmp((const char *)ev.data.scalar.value, "True")) ? 1 : 0;
+                                cfg->seq[*seqnum].tcp.urg = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
                             // TCP cooked Linux socket.
                             if (!strcmp(prevkey, "usetcpsocket"))
                             {
-                                cfg->seq[*seqnum].tcp.usetcpsocket = (!strcmp(lowerstr((char *)ev.data.scalar.value), "True")) ? 1 : 0;
+                                cfg->seq[*seqnum].tcp.usetcpsocket = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
                         }
                         else if (inicmp)
