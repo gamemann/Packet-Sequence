@@ -96,11 +96,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         {
                             inttl = 1;
                         }
-
-                        if (!strcmp(prevkey, "srcranges"))
-                        {
-                            inranges = 1;
-                        }
                     }
 
                     if (inpayload)
@@ -112,11 +107,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                     }
 
                     // Check for additional mappings inside a single sequence.
-                    if (!inincludes && !strcmp(prevkey, "includes"))
-                    {
-                        inincludes = 1;
-                    }
-
                     if (!ineth && !strcmp(prevkey, "eth"))
                     {
                         ineth = 1;
@@ -190,10 +180,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             {
                                 inttl = 0;
                             }
-                            else if (inranges)
-                            {
-                                inranges = 0;
-                            }
                             else
                             {
                                 inip = 0;
@@ -240,7 +226,38 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                 }
                 
                 break;
+
+            case YAML_SEQUENCE_START_EVENT:
+                // Check for includes or ranges.
+                if (insequence)
+                {
+                    if (!inincludes && !strcmp(prevkey, "includes"))
+                    {
+                        inincludes = 1;
+                    }
+
+                    if (!inranges && inip && !strcmp(prevkey, "ranges"))
+                    {
+                        inranges = 1;
+                    }
+                }
+
+                break;
+
+            case YAML_SEQUENCE_END_EVENT:
+                // Check if we're exiting includes or ranges.
+                if (insequence && inincludes)
+                {
+                    inincludes = 0;
+                }
+
+                if (insequence && inip && inranges)
+                {
+                    inranges = 0;
+                }
             
+                break;
+
             case YAML_SCALAR_EVENT:
                 // We want to check keys and values within the scalar (typically `key: value`).
 
@@ -249,7 +266,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                     // Assign prevkey to the value since this is representing a key.
                     prevkey = strdup((const char *)ev.data.scalar.value);
                 }
-                else if (parser.state == YAML_PARSE_BLOCK_MAPPING_KEY_STATE)
+                else if (parser.state == YAML_PARSE_BLOCK_MAPPING_KEY_STATE || parser.state == YAML_PARSE_BLOCK_SEQUENCE_ENTRY_STATE)
                 {
                     // Check if we're within a sequence or not.
                     if (insequence)
@@ -257,6 +274,8 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         // Check if we're within mappings inside the sequence.
                         if (inincludes)
                         {
+                            fprintf(stdout, "Found an include!\n");
+
                             // Since we don't care about the key, just add onto the structure and increment the count.
                             cfg->seq[*seqnum].includes[cfg->seq[*seqnum].includecount] = strdup((const char *)ev.data.scalar.value);
 
