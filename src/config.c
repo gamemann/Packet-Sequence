@@ -65,6 +65,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
 
     // Additional IP.
     int inttl = 0;
+    int inranges = 0;
     
     // Additional payload.
     int inlength = 0;
@@ -94,6 +95,11 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         if (!strcmp(prevkey, "ttl"))
                         {
                             inttl = 1;
+                        }
+
+                        if (!strcmp(prevkey, "srcranges"))
+                        {
+                            inranges = 1;
                         }
                     }
 
@@ -183,6 +189,10 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             if (inttl)
                             {
                                 inttl = 0;
+                            }
+                            else if (inranges)
+                            {
+                                inranges = 0;
                             }
                             else
                             {
@@ -289,6 +299,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 {
                                     cfg->seq[*seqnum].ip.maxttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
+                            }
+                            else if (inranges)
+                            {
+                                // Since we don't care about the key in ranges, simply add it and increase range count.
+                                cfg->seq[*seqnum].ip.ranges[cfg->seq[*seqnum].ip.rangecount] = strdup((const char *)ev.data.scalar.value);
+
+                                cfg->seq[*seqnum].ip.rangecount++;
                             }
                             else
                             {

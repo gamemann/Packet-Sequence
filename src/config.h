@@ -7,6 +7,7 @@
 
 #define MAXINCLUDES 64
 #define MAXSEQUENCES 256
+#define MAXRANGES 64
 
 struct eth_opt
 {
@@ -22,6 +23,8 @@ struct ip_opt
     // Source and destination addresses (Required).
     char *srcip;
     char *dstip;
+    char *ranges[MAXRANGES];
+    uint16_t rangecount;
 
     // Type of Service.
     uint8_t tos;
@@ -39,7 +42,7 @@ struct tcp_opt
 {
     uint16_t srcport;
     uint16_t dstport;
-    
+
     // TCP flags.
     unsigned int syn : 1;
     unsigned int psh : 1;
