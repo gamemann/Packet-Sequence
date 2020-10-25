@@ -341,6 +341,18 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         }
                         else if (intcp)
                         {
+                            // Check for source port.
+                            if (!strcmp(prevkey, "srcport"))
+                            {
+                                cfg->seq[*seqnum].tcp.srcport = (uint16_t) atoi((const char *)ev.data.scalar.value);
+                            }
+
+                            // Check for destination port.
+                            if (!strcmp(prevkey, "dstport"))
+                            {
+                                cfg->seq[*seqnum].tcp.dstport = (uint16_t) atoi((const char *)ev.data.scalar.value);
+                            }
+
                             // Check for SYN flag.
                             if (!strcmp(prevkey, "syn"))
                             {
