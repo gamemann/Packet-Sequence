@@ -104,3 +104,4 @@ struct config
 };
 
 int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seqnum);
+void clearsequence(struct config *cfg, int seqnum);

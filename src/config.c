@@ -495,3 +495,51 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
 
     return 0;
 }
+
+/**
+ * Clears a sequence.
+ * 
+ * @param cfg A pointer to the config structure.
+ * @param seqnum Which sequence to reset.
+ * @return void
+ */
+void clearsequence(struct config *cfg, int seqnum)
+{
+    cfg->seq[seqnum].send = 1;
+    cfg->seq[seqnum].block = 1;
+    cfg->seq[seqnum].count = 0;
+    cfg->seq[seqnum].threads = 0;
+
+    cfg->seq[seqnum].eth.smac = NULL;
+    cfg->seq[seqnum].eth.dmac = NULL;
+
+    cfg->seq[seqnum].ip.srcip = NULL;
+    cfg->seq[seqnum].ip.dstip = NULL;
+    cfg->seq[seqnum].ip.protocol = NULL;
+    cfg->seq[seqnum].ip.tos = 0;
+    cfg->seq[seqnum].ip.minttl = 0;
+    cfg->seq[seqnum].ip.maxttl = 0;
+    cfg->seq[seqnum].ip.ttl = 0;
+    cfg->seq[seqnum].ip.csum = 1;
+    
+    cfg->seq[seqnum].udp.srcport = 0;
+    cfg->seq[seqnum].udp.dstport = 0;
+
+    cfg->seq[seqnum].tcp.syn = 0;
+    cfg->seq[seqnum].tcp.ack = 0;
+    cfg->seq[seqnum].tcp.psh = 0;
+    cfg->seq[seqnum].tcp.rst = 0;
+    cfg->seq[seqnum].tcp.fin = 0;
+    cfg->seq[seqnum].tcp.urg = 0;
+    cfg->seq[seqnum].tcp.usetcpsocket = 0;
+    
+    cfg->seq[seqnum].icmp.code = 0;
+    cfg->seq[seqnum].icmp.type = 0;
+
+    cfg->seq[seqnum].l4csum = 1;
+
+    cfg->seq[seqnum].payload.exact = NULL;
+    cfg->seq[seqnum].payload.len = 0;
+    cfg->seq[seqnum].payload.minlen = 0;
+    cfg->seq[seqnum].payload.maxlen = 0;
+}
