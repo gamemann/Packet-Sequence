@@ -575,4 +575,16 @@ void clearsequence(struct config *cfg, int seqnum)
     cfg->seq[seqnum].payload.len = 0;
     cfg->seq[seqnum].payload.minlen = 0;
     cfg->seq[seqnum].payload.maxlen = 0;
+
+    // Reset includes.
+    for (int i = 0; i < cfg->seq[seqnum].includecount; i++)
+    {
+        cfg->seq[seqnum].includes[cfg->seq[seqnum].includecount] = NULL;
+    }
+
+    // Reset source ranges.
+    for (int i = 0; i < cfg->seq[seqnum].ip.rangecount; i++)
+    {
+        cfg->seq[seqnum].ip.ranges[cfg->seq[seqnum].ip.rangecount] = NULL;
+    }
 }
