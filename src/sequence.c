@@ -355,7 +355,7 @@ void seqsend(const char *interface, struct sequence seq)
  * Starts a sequence in receive mode. 
  * 
  * @param interface The networking interface to send packets out of.
- * @param seq A singular sequence structure containing relevant information for the apcket.
+ * @param seq A singular sequence structure containing relevant information for the packet.
  * @return void
  */
 void seqrecv(const char interface, struct sequence seq)
