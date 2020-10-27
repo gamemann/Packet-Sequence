@@ -1,12 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <signal.h>
 
 #include "pcktseq.h"
 #include "config.h"
 #include "cmdline.h"
 #include "sequence.h"
 #include "utils.h"
+
+uint8_t cont = 1;
+
+void signalhndl(int tmp)
+{
+    cont = 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -75,6 +84,15 @@ int main(int argc, char *argv[])
         fprintf(stdout, "\n\n");
     }
     */
+
+    // Create signals.
+    signal(SIGINT, signalhndl);
+
+    // Sleep to avoid program from closing.
+    while (cont)
+    {
+        sleep(1);
+    }
 
     // Close program successfully.
     return EXIT_SUCCESS;
