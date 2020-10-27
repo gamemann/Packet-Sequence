@@ -19,12 +19,17 @@
 #include <time.h>
 #include <pthread.h>
 #include <string.h>
+#include <errno.h>
 
 #include "config.h"
 #include "sequence.h"
 #include "utils.h"
 
 #include "csum.h"
+
+uint16_t threadsremaining;
+uint64_t count[MAXSEQUENCES];
+uint16_t seqcount;
 
 /**
  * The thread handler for sending/receiving.
@@ -57,11 +62,11 @@ void *threadhdl(void *data)
     }
 
     // Now match the protocol (we exclude UDP since that's default).
-    if (!strcmp(ti->seq.ip.protocol, "tcp"))
+    if (ti->seq.ip.protocol != NULL && !strcmp(ti->seq.ip.protocol, "tcp"))
     {
         protocol = IPPROTO_TCP;
     }
-    else if (!strcmp(ti->seq.ip.protocol, "icmp"))
+    else if (ti->seq.ip.protocol != NULL && !strcmp(ti->seq.ip.protocol, "icmp"))
     {
         protocol = IPPROTO_ICMP;
     }
@@ -108,10 +113,21 @@ void *threadhdl(void *data)
 
     if (protocol == IPPROTO_TCP && ti->seq.tcp.usetcpsocket)
     {
+        socktype = SOCK_STREAM;
+        sockproto = IPPROTO_TCP;
 
+        int one = 1;
+
+        // Since we're setting up a TCP socket, we need to tell it we want to specify our own Ethernet and IP headers.
+        if (setsockopt(sockfd, SOL_SOCKET, IP_HDRINCL, &one, sizeof(one)) != 0)
+        {
+            fprintf(stderr, "ERROR - Could not set IP_HDRINCL socket option :: %s.\n", strerror(errno));
+
+            pthread_exit(NULL);
+        }
     }
 
-    if ((sockfd = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW)) < 0)
+    if ((sockfd = socket(AF_PACKET, socktype, sockproto)) < 0)
     {
         perror("socket");
 
@@ -123,6 +139,7 @@ void *threadhdl(void *data)
     {
         // Receive the interface's MAC address (the source MAC).
         struct ifreq ifr;
+        
         strcpy(ifr.ifr_name, ti->device);
 
         // Attempt to get MAC address.
@@ -149,14 +166,28 @@ void *threadhdl(void *data)
     // Attempt to bind socket.
     if (bind(sockfd, (struct sockaddr *)&sin, sizeof(sin)) != 0)
     {
-        perror("bind");
+        fprintf(stderr, "ERROR - Cannot bind socket :: %s.\n", strerror(errno));
 
         pthread_exit(NULL);
     }
 
+    // If TCP cooked socket, try to connect.
+    /*
+    if (ti->seq.tcp.usetcpsocket)
+    {
+        if (connect(sockfd, (struct sockaddr *)&sin, sizeof(sin)) != 0)
+        {
+            fprintf(stderr, "ERROR - Cannot connect to TCP socket :: %s.\n", strerror(errno));
+
+            pthread_exit(NULL);
+        }
+    }
+    */
+
     // Other packet variables for use inside of loop.
     uint16_t srcport;
     uint16_t dstport;
+    char sip[32];
 
     // Loop.
     while (1)
@@ -207,10 +238,63 @@ void *threadhdl(void *data)
                 dstport = ti->seq.udp.dstport;
             }
         }
+
+        // Check if source IP is defined. If not, get a random IP from the ranges.
+        if (ti->seq.ip.srcip == NULL)
+        {
+            // Check if there are ranges.
+            if (ti->seq.ip.rangecount > 0)
+            {
+                uint16_t ran = randnum(0, (ti->seq.ip.rangecount - 1), seed);
+
+                // Ensure this range is valid.
+                if (ti->seq.ip.ranges[ran] != NULL)
+                {
+                    if (count[ti->seqcount] < ti->seq.count)
+                    {
+                        count[ti->seqcount]++;
+                    }
+    
+                    char *randip = randomip(ti->seq.ip.ranges[ran], &count[ti->seqcount]);
+
+                    if (randip != NULL)
+                    {
+                        strcpy(sip, randip);
+                    }
+                }
+                else
+                {
+                    fprintf(stderr, "ERROR - Source range count is above 0, but string is NULL. Please report this! Using localhost...\n");
+
+                    strcpy(sip, "127.0.0.1");
+                }
+            }
+            else
+            {
+                // This shouldn't happen, but since it did, just assign localhost and warn the user.
+                fprintf(stdout, "WARNING - No source IP or source range(s) specified. Using localhost...\n");
+
+                strcpy(sip, "127.0.0.1");
+            }
+        }
+
+        fprintf(stdout, "Using source IP %s\n", (ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip);
+
+        // Increase count and check.
+        if (ti->seq.count > 0 && __sync_add_and_fetch(&count[ti->seqcount], 1) >= ti->seq.count)
+        {
+            break;
+        }
     }
 
     // Close socket.
     close(sockfd);
+
+    // Decrease thread remaining count for block mode.
+    if (threadsremaining > 0)
+    {
+        threadsremaining--;
+    }
 
     pthread_exit(NULL);
 }
@@ -219,7 +303,7 @@ void *threadhdl(void *data)
  * Starts a sequence in send mode. 
  * 
  * @param interface The networking interface to send packets out of.
- * @param seq A singular sequence structure containing relevant information for the apcket.
+ * @param seq A singular sequence structure containing relevant information for the packet.
  * @return void
  */
 void seqsend(const char *interface, struct sequence seq)
@@ -234,12 +318,37 @@ void seqsend(const char *interface, struct sequence seq)
     // Create the threads needed.
     int threads = (seq.threads > 0) ? seq.threads : get_nprocs();
 
+    if (seq.block)
+    {
+        threadsremaining = threads;
+    }
+
+    // Reset count.
+    count[seqcount] = 0;
+
+    ti.seqcount = seqcount;
+
     for (int i = 0; i < threads; i++)
     {
+        // Create a duplicate of thread info structure to send to each thread.
+        struct threadinfo *tidup = malloc(sizeof(struct threadinfo));
+        memcpy(tidup, &ti, sizeof(struct threadinfo));
+
         pthread_t pid;
 
-        pthread_create(&pid, NULL, threadhdl, (void *)&ti);
+        pthread_create(&pid, NULL, threadhdl, (void *)tidup);
     }
+
+    // Wait.
+    if (seq.block)
+    {
+        while (threadsremaining > 0)
+        {
+            sleep(1);
+        }
+    }
+
+    seqcount++;
 }
 
 /**
