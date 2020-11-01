@@ -493,9 +493,9 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 }
 
                                 // Check for max length.
-                                if (prevkey != NULL && !strcmp(prevkey, "min"))
+                                if (prevkey != NULL && !strcmp(prevkey, "max"))
                                 {
-                                    cfg->seq[*seqnum].payload.minlen = (uint16_t) atoi((const char *)ev.data.scalar.value);
+                                    cfg->seq[*seqnum].payload.maxlen = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
                             }
                             else
