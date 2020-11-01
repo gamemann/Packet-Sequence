@@ -29,6 +29,7 @@
 
 uint16_t threadsremaining;
 uint64_t count[MAXSEQUENCES];
+uint64_t totaldata[MAXSEQUENCES];
 uint16_t seqcount;
 
 /**
@@ -192,8 +193,6 @@ void *threadhdl(void *data)
     char sip[32];
 
     time_t end = time(NULL) + ti->seq.time;
-    uint16_t totaldata = 0;
-    uint64_t pcktcount = 0;
 
     // Loop.
     while (1)
@@ -201,7 +200,7 @@ void *threadhdl(void *data)
         // Create rand_r() seed.
         unsigned int seed;
 
-        seed = time(NULL) ^ getpid() ^ pthread_self() ^ pcktcount;
+        seed = time(NULL) ^ getpid() ^ pthread_self() ^ count[ti->seqcount];
 
         // Assign source and destination ports if TCP or UDP.
         if (protocol == IPPROTO_TCP)
@@ -226,12 +225,12 @@ void *threadhdl(void *data)
                 // Ensure this range is valid.
                 if (ti->seq.ip.ranges[ran] != NULL)
                 {
-                    if (pcktcount < ti->seq.count)
+                    if (count[ti->seqcount] < ti->seq.count)
                     {
-                        pcktcount++;
+                        count[ti->seqcount]++;
                     }
     
-                    char *randip = randomip(ti->seq.ip.ranges[ran], &pcktcount);
+                    char *randip = randomip(ti->seq.ip.ranges[ran], &count[ti->seqcount]);
 
                     if (randip != NULL)
                     {
@@ -439,16 +438,16 @@ void *threadhdl(void *data)
         // Check data.
         if (ti->seq.maxdata > 0)
         {
-            totaldata += ntohs(iph->tot_len) + sizeof(struct ethhdr);
+            __sync_add_and_fetch(&totaldata[ti->seqcount], ntohs(iph->tot_len) + sizeof(struct ethhdr));
 
-            if (totaldata >= ti->seq.maxdata)
+            if (totaldata[ti->seqcount] >= ti->seq.maxdata)
             {
                 break;
             }
         }
 
         // Increase count and check.
-        if (ti->seq.count > 0 && ++pcktcount >= ti->seq.count)
+        if (ti->seq.count > 0 && __sync_add_and_fetch(&count[ti->seqcount], 1) >= ti->seq.count)
         {
             break;
         }
@@ -489,6 +488,10 @@ void seqsend(const char *interface, struct sequence seq)
     {
         threadsremaining = threads;
     }
+
+    // Reset count and total data for this sequence.
+    count[seqcount] = 0;
+    totaldata[seqcount] = 0;
 
     ti.seqcount = seqcount;
 
