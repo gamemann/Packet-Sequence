@@ -200,43 +200,13 @@ void *threadhdl(void *data)
         // Assign source and destination ports if TCP or UDP.
         if (protocol == IPPROTO_TCP)
         {
-            if (ti->seq.tcp.srcport == 0)
-            {
-                srcport = randnum(0, 65535, seed);
-            }
-            else
-            {
-                srcport = ti->seq.tcp.srcport;
-            }
-
-            if (ti->seq.tcp.dstport == 0)
-            {
-                dstport = randnum(0, 65535, seed);
-            }
-            else
-            {
-                dstport = ti->seq.tcp.dstport;
-            }
+            srcport = (ti->seq.tcp.srcport == 0) ? randnum(0, 65535, seed) : ti->seq.tcp.srcport;
+            dstport = (ti->seq.tcp.dstport == 0) ? randnum(0, 65535, seed) : ti->seq.tcp.dstport;
         }
         else if (protocol == IPPROTO_UDP)
         {
-            if (ti->seq.udp.srcport == 0)
-            {
-                srcport = randnum(0, 65535, seed);
-            }
-            else
-            {
-                srcport = ti->seq.udp.srcport;
-            }
-
-            if (ti->seq.udp.dstport == 0)
-            {
-                dstport = randnum(0, 65535, seed);
-            }
-            else
-            {
-                dstport = ti->seq.udp.dstport;
-            }
+            srcport = (ti->seq.udp.srcport == 0) ? randnum(0, 65535, seed) : ti->seq.udp.srcport;
+            dstport = (ti->seq.udp.dstport == 0) ? randnum(0, 65535, seed) : ti->seq.udp.dstport;
         }
 
         // Check if source IP is defined. If not, get a random IP from the ranges.
