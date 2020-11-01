@@ -550,11 +550,16 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 cfg->seq[*seqnum].trackcount = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
-
                             // Check for threads.
                             if (prevkey != NULL && !strcmp(prevkey, "threads"))
                             {
                                 cfg->seq[*seqnum].threads = atoi((const char *)ev.data.scalar.value);
+                            }
+
+                            // Check for layer 4 checksum.
+                            if (prevkey != NULL && !strcmp(prevkey, "l4csum"))
+                            {   
+                                cfg->seq[*seqnum].l4csum = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
                         }
                     }
