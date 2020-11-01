@@ -261,9 +261,15 @@ void *threadhdl(void *data)
                     {
                         strcpy(sip, randip);
                     }
+                    else
+                    {
+                        goto fail;
+                    }
+                    
                 }
                 else
                 {
+                    fail:
                     fprintf(stderr, "ERROR - Source range count is above 0, but string is NULL. Please report this! Using localhost...\n");
 
                     strcpy(sip, "127.0.0.1");
