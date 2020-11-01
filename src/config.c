@@ -66,6 +66,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
     // Additional IP.
     int inttl = 0;
     int inranges = 0;
+    int inid = 0;
     
     // Additional payload.
     int inlength = 0;
@@ -95,6 +96,11 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         if (prevkey != NULL && !strcmp(prevkey, "ttl"))
                         {
                             inttl = 1;
+                        }
+                        // Check if we're entering the ID mapping.
+                        else if (prevkey != NULL && !strcmp(prevkey, "id"))
+                        {
+                            inid = 1;
                         }
                     }
 
@@ -179,6 +185,10 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             if (inttl)
                             {
                                 inttl = 0;
+                            }
+                            else if (inid)
+                            {
+                                inid = 0;
                             }
                             else
                             {
@@ -318,6 +328,26 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 {
                                     cfg->seq[*seqnum].ip.maxttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
+                            }
+                            else if (inid)
+                            {
+                                // Check for fixed TTL.
+                                if (prevkey != NULL && !strcmp(prevkey, "fixed"))
+                                {
+                                    cfg->seq[*seqnum].ip.id = (uint16_t) atoi((const char *)ev.data.scalar.value);
+                                }
+
+                                // Check for min TTL.
+                                if (prevkey != NULL && !strcmp(prevkey, "minid"))
+                                {
+                                    cfg->seq[*seqnum].ip.minid = (uint8_t) atoi((const char *)ev.data.scalar.value);
+                                }
+
+                                // Check for max TTL.
+                                if (prevkey != NULL && !strcmp(prevkey, "maxid"))
+                                {
+                                    cfg->seq[*seqnum].ip.maxid = (uint8_t) atoi((const char *)ev.data.scalar.value);
+                                }  
                             }
                             else if (inranges)
                             {
