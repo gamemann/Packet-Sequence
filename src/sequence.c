@@ -195,7 +195,7 @@ void *threadhdl(void *data)
         // Create rand_r() seed.
         unsigned int seed;
 
-        seed = time(NULL) ^ getpid() ^ pthread_self();
+        seed = time(NULL) ^ getpid() ^ pthread_self() ^ count[ti->seqcount];
 
         // Assign source and destination ports if TCP or UDP.
         if (protocol == IPPROTO_TCP)
