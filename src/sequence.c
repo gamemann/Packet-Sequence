@@ -258,8 +258,6 @@ void *threadhdl(void *data)
             }
         }
 
-        fprintf(stdout, "Using source IP %s\n", (ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip);
-
         // Initialize buffer for packet and layer-4 header's length.
         char buffer[MAXPCKTLEN];
         uint8_t l4len;
@@ -270,7 +268,7 @@ void *threadhdl(void *data)
         // Fill out Ethernet header.
         eth->h_proto = htons(ETH_P_IP);
         memcpy(eth->h_source, smac, ETH_ALEN);
-        memcpy(eth->h_source, dmac, ETH_ALEN);
+        memcpy(eth->h_dest, dmac, ETH_ALEN);
 
         // Initialize IP header.
         struct iphdr *iph = (struct iphdr *)(buffer + sizeof(struct ethhdr));
@@ -375,6 +373,7 @@ void *threadhdl(void *data)
 
             if (ti->seq.l4csum)
             {
+                udph->check = 0;
                 udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, sizeof(struct udphdr) + datalen, IPPROTO_UDP, csum_partial(udph, sizeof(struct udphdr) + datalen, 0));
             }
         }
@@ -396,6 +395,7 @@ void *threadhdl(void *data)
 
             if (ti->seq.l4csum)
             {
+                tcph->check = 0;
                 tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
             }
         }
@@ -408,6 +408,7 @@ void *threadhdl(void *data)
 
             if (ti->seq.l4csum)
             {
+                icmph->checksum = 0;
                 icmph->checksum = icmp_csum((uint16_t *)icmph, sizeof(struct icmphdr) + datalen);
             }
         }
@@ -447,9 +448,14 @@ void *threadhdl(void *data)
         }
 
         // Increase count and check.
-        if (ti->seq.count > 0 && __sync_add_and_fetch(&count[ti->seqcount], 1) >= ti->seq.count)
+        if (ti->seq.count > 0 || ti->seq.trackcount)
         {
-            break;
+            __sync_add_and_fetch(&count[ti->seqcount], 1);
+
+            if (ti->seq.count > 0 && count[ti->seqcount] >= ti->seq.count)
+            {
+                break;
+            }
         }
     }
 
