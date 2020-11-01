@@ -541,7 +541,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             if (prevkey != NULL && !strcmp(prevkey, "maxdata"))
                             {   
                                 
-                                cfg->seq[*seqnum].time = atoi((const char *)ev.data.scalar.value);
+                                cfg->seq[*seqnum].maxdata = atoi((const char *)ev.data.scalar.value);
+                            }
+
+                            // Check for tracking count.
+                            if (prevkey != NULL && !strcmp(prevkey, "trackcount"))
+                            {   
+                                cfg->seq[*seqnum].trackcount = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
 

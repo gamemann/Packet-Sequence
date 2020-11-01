@@ -91,6 +91,7 @@ struct sequence
     uint16_t threads;
     char *includes[MAXINCLUDES];
     uint16_t includecount;
+    unsigned int trackcount : 1;
 
     // Ethernet options.
     struct eth_opt eth;
