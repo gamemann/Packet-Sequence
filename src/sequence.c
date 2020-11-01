@@ -48,6 +48,8 @@ void *threadhdl(void *data)
     uint8_t dmac[ETH_ALEN];
     uint8_t payload[MAXPCKTLEN];
     uint16_t exactpayloadlen = 0;
+    uint16_t id = 0;
+    uint8_t ttl = 0;
 
     // Let's first start off by checking if the source MAC address is set within the config.
     if (ti->seq.eth.smac != NULL)
@@ -189,13 +191,17 @@ void *threadhdl(void *data)
     uint16_t dstport;
     char sip[32];
 
+    time_t end = time(NULL) + ti->seq.time;
+    uint16_t totaldata = 0;
+    uint64_t pcktcount = 0;
+
     // Loop.
     while (1)
     {
         // Create rand_r() seed.
         unsigned int seed;
 
-        seed = time(NULL) ^ getpid() ^ pthread_self() ^ count[ti->seqcount];
+        seed = time(NULL) ^ getpid() ^ pthread_self() ^ pcktcount;
 
         // Assign source and destination ports if TCP or UDP.
         if (protocol == IPPROTO_TCP)
@@ -220,12 +226,12 @@ void *threadhdl(void *data)
                 // Ensure this range is valid.
                 if (ti->seq.ip.ranges[ran] != NULL)
                 {
-                    if (count[ti->seqcount] < ti->seq.count)
+                    if (pcktcount < ti->seq.count)
                     {
-                        count[ti->seqcount]++;
+                        pcktcount++;
                     }
     
-                    char *randip = randomip(ti->seq.ip.ranges[ran], &count[ti->seqcount]);
+                    char *randip = randomip(ti->seq.ip.ranges[ran], &pcktcount);
 
                     if (randip != NULL)
                     {
@@ -235,7 +241,6 @@ void *threadhdl(void *data)
                     {
                         goto fail;
                     }
-                    
                 }
                 else
                 {
@@ -256,8 +261,194 @@ void *threadhdl(void *data)
 
         fprintf(stdout, "Using source IP %s\n", (ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip);
 
+        // Initialize buffer for packet and layer-4 header's length.
+        char buffer[MAXPCKTLEN];
+        uint8_t l4len;
+
+        // Initialize Ethernet header.
+        struct ethhdr *eth = (struct ethhdr *)(buffer);
+
+        // Fill out Ethernet header.
+        eth->h_proto = htons(ETH_P_IP);
+        memcpy(eth->h_source, smac, ETH_ALEN);
+        memcpy(eth->h_source, dmac, ETH_ALEN);
+
+        // Initialize IP header.
+        struct iphdr *iph = (struct iphdr *)(buffer + sizeof(struct ethhdr));
+
+        // Fill out IP header generic fields.
+        iph->ihl = 5;
+        iph->version = 4;
+        iph->protocol = protocol;
+        iph->frag_off = 0;
+        iph->tos = ti->seq.ip.tos;
+
+        // TTL field.
+        if (ti->seq.ip.ttl < 1)
+        {
+            ttl = randnum(ti->seq.ip.minttl, ti->seq.ip.maxttl, seed);
+        }
+        else
+        {
+            ttl = ti->seq.ip.ttl;
+        }
+
+        iph->ttl = ttl;
+
+        // ID field.
+        if (ti->seq.ip.id < 1)
+        {
+            id = randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed);
+        }
+        else
+        {
+            id = ti->seq.ip.id;
+        }
+
+        iph->id = id;
+
+        // Source IP.
+        struct in_addr saddr;
+        inet_aton((ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip, &saddr);
+
+        iph->saddr = saddr.s_addr;
+
+        // Destination IP.
+        struct in_addr daddr;
+        inet_aton(ti->seq.ip.dstip, &daddr);
+
+        iph->daddr = daddr.s_addr;
+
+        // Retrieve layer-4 header length.
+        switch (protocol)
+        {
+            case IPPROTO_UDP:
+                l4len = sizeof(struct udphdr);
+
+                break;
+            
+            case IPPROTO_TCP:
+                l4len = sizeof(struct tcphdr);
+
+                break;
+
+            case IPPROTO_ICMP:
+                l4len = sizeof(struct icmphdr);
+
+                break;
+        }
+
+        // Perform payload first so we can calculate checksum for layer-4 header later.
+        unsigned char *data = (unsigned char *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4) + l4len);
+        uint16_t datalen;
+
+        // Check for custom payload.
+        if (exactpayloadlen > 0)
+        {
+            datalen = exactpayloadlen;
+
+            for (uint16_t i = 0; i < exactpayloadlen; i++)
+            {
+                *data = payload[i];
+                (*data)++;
+            }
+        }
+        else
+        {
+            datalen = randnum(ti->seq.payload.minlen, ti->seq.payload.maxlen, seed);
+
+            // Fill out payload with random characters.
+            for (uint16_t i = 0; i < datalen; i++)
+            {
+                *data = rand_r(&seed);
+                (*data)++;
+            }
+        }
+
+        // Fill out layer-4 header.
+        if (protocol == IPPROTO_UDP)
+        {
+            struct udphdr *udph = (struct udphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+
+            udph->source = htons(srcport);
+            udph->dest = htons(dstport);
+            udph->len = htons(l4len + datalen);
+
+            if (ti->seq.l4csum)
+            {
+                udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, sizeof(struct udphdr) + datalen, IPPROTO_UDP, csum_partial(udph, sizeof(struct udphdr) + datalen, 0));
+            }
+        }
+        else if (protocol == IPPROTO_TCP)
+        {
+            struct tcphdr *tcph = (struct tcphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+
+            tcph->doff = 5;
+            tcph->source = htons(srcport);
+            tcph->dest = htons(dstport);
+            
+            // Flags.
+            tcph->syn = ti->seq.tcp.syn;
+            tcph->ack = ti->seq.tcp.ack;
+            tcph->psh = ti->seq.tcp.psh;
+            tcph->fin = ti->seq.tcp.fin;
+            tcph->rst = ti->seq.tcp.rst;
+            tcph->urg = ti->seq.tcp.urg;
+
+            if (ti->seq.l4csum)
+            {
+                tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
+            }
+        }
+        else
+        {
+            struct icmphdr *icmph = (struct icmphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+
+            icmph->code = ti->seq.icmp.code;
+            icmph->type = ti->seq.icmp.type;
+
+            if (ti->seq.l4csum)
+            {
+                icmph->checksum = icmp_csum((uint16_t *)icmph, sizeof(struct icmphdr) + datalen);
+            }
+        }
+
+        // Calculate IP header length.
+        iph->tot_len = htons((iph->ihl * 4) + l4len + datalen);
+
+        // IP header checksum.
+        if (ti->seq.ip.csum)
+        {
+            update_iph_checksum(iph);
+        }
+
+        uint16_t sent;
+
+        // Attempt to send packet.
+        if ((sent = sendto(sockfd, buffer, ntohs(iph->tot_len) + sizeof(struct ethhdr), 0, (struct sockaddr *)&sin, sizeof(sin))) < 0)
+        {
+            fprintf(stderr, "ERROR - Could not send packet with length %lu :: %s.\n", (ntohs(iph->tot_len) + sizeof(struct ethhdr)), strerror(errno));
+        }
+
+        // Check time.
+        if (ti->seq.time > 0 && time(NULL) >= end)
+        {
+            break;
+        }
+
+        // Check data.
+        if (ti->seq.maxdata > 0)
+        {
+            totaldata += ntohs(iph->tot_len) + sizeof(struct ethhdr);
+
+            if (totaldata >= ti->seq.maxdata)
+            {
+                break;
+            }
+        }
+
         // Increase count and check.
-        if (ti->seq.count > 0 && __sync_add_and_fetch(&count[ti->seqcount], 1) >= ti->seq.count)
+        if (ti->seq.count > 0 && ++pcktcount >= ti->seq.count)
         {
             break;
         }
@@ -298,9 +489,6 @@ void seqsend(const char *interface, struct sequence seq)
     {
         threadsremaining = threads;
     }
-
-    // Reset count.
-    count[seqcount] = 0;
 
     ti.seqcount = seqcount;
 
