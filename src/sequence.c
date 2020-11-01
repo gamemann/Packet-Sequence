@@ -129,7 +129,7 @@ void *threadhdl(void *data)
 
     if ((sockfd = socket(AF_PACKET, socktype, sockproto)) < 0)
     {
-        perror("socket");
+        fprintf(stderr, "ERROR - Could not setup socket :: %s.\n", strerror(errno));
 
         pthread_exit(NULL);
     }
@@ -145,7 +145,7 @@ void *threadhdl(void *data)
         // Attempt to get MAC address.
         if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) != 0)
         {
-            perror("ioctl");
+            fprintf(stderr, "ERROR - Could not retrieve MAC address of interface :: %s.\n", strerror(errno));
 
             pthread_exit(NULL);
         }
@@ -166,7 +166,7 @@ void *threadhdl(void *data)
     // Attempt to bind socket.
     if (bind(sockfd, (struct sockaddr *)&sin, sizeof(sin)) != 0)
     {
-        fprintf(stderr, "ERROR - Cannot bind socket :: %s.\n", strerror(errno));
+        fprintf(stderr, "ERROR - Cannot bind to socket :: %s.\n", strerror(errno));
 
         pthread_exit(NULL);
     }
