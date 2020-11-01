@@ -62,11 +62,11 @@ void *threadhdl(void *data)
     }
 
     // Now match the protocol (we exclude UDP since that's default).
-    if (ti->seq.ip.protocol != NULL && !strcmp(ti->seq.ip.protocol, "tcp"))
+    if (ti->seq.ip.protocol != NULL && !strcmp(lowerstr(ti->seq.ip.protocol), "tcp"))
     {
         protocol = IPPROTO_TCP;
     }
-    else if (ti->seq.ip.protocol != NULL && !strcmp(ti->seq.ip.protocol, "icmp"))
+    else if (ti->seq.ip.protocol != NULL && !strcmp(lowerstr(ti->seq.ip.protocol), "icmp"))
     {
         protocol = IPPROTO_ICMP;
     }
