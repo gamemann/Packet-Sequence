@@ -530,6 +530,21 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 cfg->seq[*seqnum].count = atoi((const char *)ev.data.scalar.value);
                             }
 
+                            // Check for time.
+                            if (prevkey != NULL && !strcmp(prevkey, "time"))
+                            {   
+                                
+                                cfg->seq[*seqnum].time = atoi((const char *)ev.data.scalar.value);
+                            }
+
+                            // Check for max data.
+                            if (prevkey != NULL && !strcmp(prevkey, "maxdata"))
+                            {   
+                                
+                                cfg->seq[*seqnum].time = atoi((const char *)ev.data.scalar.value);
+                            }
+
+
                             // Check for threads.
                             if (prevkey != NULL && !strcmp(prevkey, "threads"))
                             {

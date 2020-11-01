@@ -86,6 +86,8 @@ struct sequence
     unsigned int send : 1;
     unsigned int block : 1;
     uint64_t count;
+    uint64_t time;
+    uint64_t maxdata;
     uint16_t threads;
     char *includes[MAXINCLUDES];
     uint16_t includecount;
