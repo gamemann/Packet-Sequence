@@ -82,23 +82,26 @@ char *randomip(char *range, uint64_t *pcktcount)
 
     split = strtok(str, "/");
 
-    for (int i = 0; i < 2; i++)
+    // Check to ensure split isn't NULL.
+    if (split != NULL)
     {
-        if (split == NULL)
-        {
-            break;
-        }
+        // Get network IP.
+        sip = strdup(split);
 
-        if (i == 0)
-        {
-            sip = strdup(split);
-        }
-        else
+        // Split again based off of '/'.
+        split = strtok(NULL, "/");
+
+        // Check to ensure split isn't NULL and get CIDR.
+        if (split != NULL)
         {
             cidrstr = strdup(split);
         }
-        
-        split = strtok(NULL, "/");
+    }
+
+    // Check to ensure CIDR string and source IP isn't NULL.
+    if (cidrstr == NULL || sip == NULL)
+    {
+        return "127.0.0.1";
     }
 
     // Free the temporary string (str).
