@@ -525,27 +525,25 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
 
                             // Check for count.
                             if (prevkey != NULL && !strcmp(prevkey, "count"))
-                            {   
-                                
+                            {
                                 cfg->seq[*seqnum].count = strtoull((const char *)ev.data.scalar.value, (char **)ev.data.scalar.value, 0);
                             }
 
                             // Check for time.
                             if (prevkey != NULL && !strcmp(prevkey, "time"))
-                            {   
-                                
+                            {
                                 cfg->seq[*seqnum].time = strtoull((const char *)ev.data.scalar.value, (char **)ev.data.scalar.value, 0);
                             }
 
                             // Check for max data.
                             if (prevkey != NULL && !strcmp(prevkey, "maxdata"))
-                            {   
+                            {
                                 cfg->seq[*seqnum].maxdata = strtoull((const char *)ev.data.scalar.value, (char **)ev.data.scalar.value, 0);
                             }
 
                             // Check for tracking count.
                             if (prevkey != NULL && !strcmp(prevkey, "trackcount"))
-                            {   
+                            {
                                 cfg->seq[*seqnum].trackcount = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                             }
 
