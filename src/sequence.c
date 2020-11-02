@@ -225,7 +225,7 @@ void *threadhdl(void *data)
                 // Ensure this range is valid.
                 if (ti->seq.ip.ranges[ran] != NULL)
                 {
-                    if (count[ti->seqcount] < ti->seq.count)
+                    if (ti->seq.count < 1 && !ti->seq.trackcount)
                     {
                         count[ti->seqcount]++;
                     }
@@ -451,6 +451,8 @@ void *threadhdl(void *data)
         if (ti->seq.count > 0 || ti->seq.trackcount)
         {
             __sync_add_and_fetch(&count[ti->seqcount], 1);
+
+            fprintf(stdout, "Sent %" PRIu64 "/%" PRIu64 "\n", count[ti->seqcount], ti->seq.count);
 
             if (ti->seq.count > 0 && count[ti->seqcount] >= ti->seq.count)
             {
