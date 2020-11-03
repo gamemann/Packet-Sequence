@@ -37,6 +37,9 @@ git clone --recursive https://github.com/gamemann/Packet-Sequence
 # Go into directory.
 cd Packet-Sequence
 
+# Some needed tools for libyaml.
+#apt-get install autoconf libtool
+
 # Compile both libyaml and the program.
 make
 ```
