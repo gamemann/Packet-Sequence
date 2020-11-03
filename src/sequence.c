@@ -440,8 +440,6 @@ void *threadhdl(void *data)
             }
 
             __sync_add_and_fetch(&count[ti->seqcount], 1);
-
-            //fprintf(stdout, "Sent %" PRIu64 "/%" PRIu64 "\n", count[ti->seqcount], ti->seq.count);
         }
 
         // Check time.
