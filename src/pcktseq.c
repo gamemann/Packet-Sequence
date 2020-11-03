@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "Usage: pcktseq -c <configfile> [-v -g -h]\n\n" \
             "-c --cfg => Path to YAML file to parse.\n" \
             "-g --global => ...\n" \
+            "-l --list => Print basic information about sequences.\n"
             "-v --verbose => Provide verbose output.\n" \
             "-h --help => Print out help menu and exit program.\n");
 
@@ -49,6 +50,42 @@ int main(int argc, char *argv[])
     // Attempt to parse config.
     parseconfig(cmd.config, &cfg, 0, &seqc);
 
+    // Check for list option.
+    if (cmd.list)
+    {
+        fprintf(stdout, "Found %d sequences.\n", seqc);
+
+        fprintf(stdout, "Got interface => %s.\n", cfg.interface);
+
+        fprintf(stdout, "Sequences:\n\n--------------------------\n");
+
+        for (int i = 0; i < seqc; i++)
+        {
+            fprintf(stdout, "Sequence #%d:\n\n", i);
+
+            fprintf(stdout, "Includes =>\n");
+
+            if (cfg.seq[i].includecount > 0)
+            {
+                for (int j = 0; j < cfg.seq[i].includecount; j++)
+                {
+                    fprintf(stdout, "\t- %s\n", cfg.seq[i].includes[j]);
+                }
+            }
+
+            fprintf(stdout, "Send => %s\n", (cfg.seq[i].send) ? "True" : "False");
+            fprintf(stdout, "Block => %s\n", (cfg.seq[i].block) ? "True" : "False");
+            fprintf(stdout, "Count => %" PRIu64 "\n", cfg.seq[i].count);
+            fprintf(stdout, "Time => %" PRIu64 "\n", cfg.seq[i].time);
+            fprintf(stdout, "Delay => %" PRIu64 "\n", cfg.seq[i].delay);
+            fprintf(stdout, "Threads => %" PRIu16 "\n", cfg.seq[i].threads);
+
+            fprintf(stdout, "\n\n");
+        }
+
+        return EXIT_SUCCESS;
+    }
+
     // Loop through each sequence found.
     for (int i = 0; i < seqc; i++)
     {
@@ -58,36 +95,6 @@ int main(int argc, char *argv[])
             seqsend(cfg.interface, cfg.seq[i], seqc);
         }
     }
-
-    /*
-    fprintf(stdout, "Found %d sequences.\n", seqc);
-
-    fprintf(stdout, "Got interface => %s.\n", cfg.interface);
-
-    fprintf(stdout, "Sequences:\n\n--------------------------\n");
-
-    for (int i = 0; i < seqc; i++)
-    {
-        fprintf(stdout, "Sequence #%d:\n\n", i);
-
-        fprintf(stdout, "Includes =>\n");
-
-        if (cfg.seq[i].includecount > 0)
-        {
-            for (int j = 0; j < cfg.seq[i].includecount; j++)
-            {
-                fprintf(stdout, "\t- %s\n", cfg.seq[i].includes[j]);
-            }
-        }
-
-        fprintf(stdout, "Send => %s\n", (cfg.seq[i].send) ? "True" : "False");
-        fprintf(stdout, "Block => %s\n", (cfg.seq[i].block) ? "True" : "False");
-        fprintf(stdout, "Count => %" PRIu64 "\n", cfg.seq[i].count);
-        fprintf(stdout, "Threads => %" PRIu16 "\n", cfg.seq[i].threads);
-
-        fprintf(stdout, "\n\n");
-    }
-    */
 
    fprintf(stdout, "Completed %d sequences!\n", seqc);
 

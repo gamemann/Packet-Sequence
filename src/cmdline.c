@@ -8,6 +8,7 @@ static struct option longopts[] =
 {
     {"cfg", required_argument, NULL, 'c'},
     {"global", no_argument, NULL, 'g'},
+    {"list", no_argument, NULL, 'l'},
     {"verbose", no_argument, NULL, 'v'},
     {"help", no_argument, NULL, 'h'},
     {NULL, 0, NULL, 0}
@@ -27,7 +28,7 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
 
     while (optind < argc)
     {
-        if ((c = getopt_long(argc, argv, "c:ghv", longopts, NULL)) != -1)
+        if ((c = getopt_long(argc, argv, "c:ghvl", longopts, NULL)) != -1)
         {
             switch (c)
             {
@@ -38,6 +39,11 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
 
                 case 'g':
                     cmd->global = 1;
+
+                    break;
+
+                case 'l':
+                    cmd->list = 1;
 
                     break;
 
