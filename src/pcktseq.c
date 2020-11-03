@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         // If this is for sending, execute sendseq().
         if (cfg.seq[i].send)
         {
-            seqsend(cfg.interface, cfg.seq[i], seqc);
+            seqsend(cfg.interface, cfg.seq[i], seqc, cmd);
         }
     }
 

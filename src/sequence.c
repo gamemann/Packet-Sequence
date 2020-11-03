@@ -22,6 +22,7 @@
 #include <errno.h>
 
 #include "config.h"
+#include "cmdline.h"
 #include "sequence.h"
 #include "utils.h"
 
@@ -486,7 +487,7 @@ void *threadhdl(void *data)
  * @param seq A singular sequence structure containing relevant information for the packet.
  * @return void
  */
-void seqsend(const char *interface, struct sequence seq, uint16_t seqc)
+void seqsend(const char *interface, struct sequence seq, uint16_t seqc, struct cmdline cmd)
 {
     // Create new threadinfo structure to pass to threads.
     struct threadinfo ti = {0};
@@ -494,6 +495,9 @@ void seqsend(const char *interface, struct sequence seq, uint16_t seqc)
     // Assign correct values to thread info.
     strcpy((char *)&ti.device, interface);
     memcpy(&ti.seq, &seq, sizeof(struct sequence));
+
+    // Copy command line.
+    ti.cmd = cmd;
 
     // Create the threads needed.
     int threads = (seq.threads > 0) ? seq.threads : get_nprocs();
