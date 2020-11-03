@@ -529,7 +529,7 @@ void seqsend(const char *interface, struct sequence seq, uint16_t seqc, struct c
     }
 
     // Check for block or if this is the last sequence (we'd want to join threads so the main thread exits after completion).
-    if (seq.block || (seqcount - 1) >= seqc)
+    if (seq.block || (seqcount) >= (seqc - 1))
     {
         for (int i = 0; i < threads; i++)
         {
