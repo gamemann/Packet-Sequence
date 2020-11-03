@@ -503,23 +503,23 @@ void seqsend(const char *interface, struct sequence seq)
 
     ti.seqcount = seqcount;
 
+    pthread_t pid[MAXTHREADS];
+
     for (int i = 0; i < threads; i++)
     {
         // Create a duplicate of thread info structure to send to each thread.
         struct threadinfo *tidup = malloc(sizeof(struct threadinfo));
         memcpy(tidup, &ti, sizeof(struct threadinfo));
 
-        pthread_t pid;
-
-        pthread_create(&pid, NULL, threadhdl, (void *)tidup);
+        pthread_create(&pid[i], NULL, threadhdl, (void *)tidup);
     }
 
     // Wait.
     if (seq.block)
     {
-        while (threadsremaining > 0)
+        for (int i = 0; i < threads; i++)
         {
-            sleep(1);
+            pthread_join(pid[i], NULL);
         }
     }
 
