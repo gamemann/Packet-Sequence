@@ -47,6 +47,12 @@ int main(int argc, char *argv[])
     struct config cfg = {0};
     int seqc = 0;
 
+    // Set default values on each sequence.
+    for (int i = 0; i < MAXSEQUENCES; i++)
+    {
+        clearsequence(&cfg, i);
+    }
+
     // Attempt to parse config.
     parseconfig(cmd.config, &cfg, 0, &seqc);
 
