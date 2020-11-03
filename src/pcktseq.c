@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     {
         fprintf(stdout, "Usage: pcktseq -c <configfile> [-v -g -h]\n\n" \
             "-c --cfg => Path to YAML file to parse.\n" \
-            "-g --global => ...\n" \
+            "-g --global => N/A\n" \
             "-l --list => Print basic information about sequences.\n"
             "-v --verbose => Provide verbose output.\n" \
             "-h --help => Print out help menu and exit program.\n");
