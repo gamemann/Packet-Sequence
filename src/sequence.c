@@ -459,6 +459,12 @@ void *threadhdl(void *data)
 
             __sync_add_and_fetch(&totaldata[ti->seqcount], ntohs(iph->tot_len) + sizeof(struct ethhdr));
         }
+
+        // Check for delay.
+        if (ti->seq.delay > 0)
+        {
+            usleep(ti->seq.delay);
+        }
     }
 
     // Close socket.

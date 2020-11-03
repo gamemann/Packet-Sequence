@@ -535,6 +535,12 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 cfg->seq[*seqnum].time = strtoull((const char *)ev.data.scalar.value, (char **)ev.data.scalar.value, 0);
                             }
 
+                            // Check for time.
+                            if (prevkey != NULL && !strcmp(prevkey, "delay"))
+                            {
+                                cfg->seq[*seqnum].delay = strtoull((const char *)ev.data.scalar.value, (char **)ev.data.scalar.value, 0);
+                            }
+
                             // Check for max data.
                             if (prevkey != NULL && !strcmp(prevkey, "maxdata"))
                             {
