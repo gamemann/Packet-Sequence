@@ -5,7 +5,8 @@ sequences:
   one:
     send: true
     block: true
-    count: 1
+    count: 10
+    delay: 0
     threads: 1
     eth:
       smac: "1a:c4:df:70:d8:a6"
@@ -17,7 +18,7 @@ sequences:
       csum: True
     udp:
       srcport: 27000
-      dstport: 27015
+      dstport: 27017
     l4csum: True
     payload:
       exact: "FF FF FF FF 49"
@@ -25,6 +26,7 @@ sequences:
     send: true
     block: true
     count: 1
+    delay: 0
     threads: 1
     eth:
       smac: "1a:c4:df:70:d8:a6"
@@ -44,6 +46,7 @@ sequences:
     send: true
     block: true
     count: 1
+    delay: 0
     threads: 1
     eth:
       smac: "1a:c4:df:70:d8:a6"
@@ -63,6 +66,7 @@ sequences:
     send: true
     block: true
     count: 1
+    delay: 0
     threads: 1
     eth:
       smac: "1a:c4:df:70:d8:a6"
@@ -82,6 +86,7 @@ sequences:
     send: true
     block: true
     count: 1
+    delay: 0
     threads: 1
     eth:
       smac: "1a:c4:df:70:d8:a6"
@@ -99,7 +104,8 @@ sequences:
       exact: "01 02 03 04 05"
   six:
     send: true
-    count: 10
+    count: 4
+    delay: 0
     threads: 2
     eth:
       smac: "1a:c4:df:70:d8:a6"
