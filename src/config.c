@@ -618,10 +618,10 @@ void clearsequence(struct config *cfg, int seqnum)
 {
     cfg->seq[seqnum].send = 1;
     cfg->seq[seqnum].block = 1;
-    cfg->seq[seqnum].count = 0;
+    cfg->seq[seqnum].count = 5;
     cfg->seq[seqnum].threads = 0;
     cfg->seq[seqnum].time = 0;
-    cfg->seq[seqnum].delay = 0;
+    cfg->seq[seqnum].delay = 1000000;
 
     cfg->seq[seqnum].eth.smac = NULL;
     cfg->seq[seqnum].eth.dmac = NULL;
@@ -632,7 +632,7 @@ void clearsequence(struct config *cfg, int seqnum)
     cfg->seq[seqnum].ip.tos = 0;
     cfg->seq[seqnum].ip.minttl = 0;
     cfg->seq[seqnum].ip.maxttl = 0;
-    cfg->seq[seqnum].ip.ttl = 0;
+    cfg->seq[seqnum].ip.ttl = 64;
     cfg->seq[seqnum].ip.csum = 1;
     
     cfg->seq[seqnum].udp.srcport = 0;
