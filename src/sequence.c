@@ -431,6 +431,12 @@ void *threadhdl(void *data)
             fprintf(stderr, "ERROR - Could not send packet with length %lu :: %s.\n", (ntohs(iph->tot_len) + sizeof(struct ethhdr)), strerror(errno));
         }
 
+        // Check if we want to send verbose output or not.
+        if (ti->cmd.verbose && sent > 0)
+        {
+            fprintf(stdout, "Sent %d bytes of data from %s:%d to %s:%d.\n", sent, (ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip, srcport, ti->seq.ip.dstip, dstport);
+        }
+
         // Increase count and check.
         if (ti->seq.count > 0 || ti->seq.trackcount)
         {
