@@ -17,6 +17,18 @@ int main(int argc, char *argv[])
     // Parse command line and store values into cmd.
     parsecmdline(argc, argv, &cmd);
 
+    // Help menu.
+    if (cmd.help)
+    {
+        fprintf(stdout, "Usage: pcktseq -c <configfile> [-v -g -h]\n\n" \
+            "-c --cfg => Path to YAML file to parse.\n" \
+            "-g --global => ...\n" \
+            "-v --verbose => Provide verbose output.\n" \
+            "-h --help => Print out help menu and exit program.\n");
+
+        return EXIT_SUCCESS;
+    }
+
     // Check if config is specified.
     if (cmd.config == NULL)
     {
