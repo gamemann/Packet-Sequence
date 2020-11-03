@@ -198,6 +198,23 @@ void *threadhdl(void *data)
     // Loop.
     while (1)
     {
+        // Increase count and check.
+        if (ti->seq.count > 0 || ti->seq.trackcount)
+        {
+            if (ti->seq.count > 0 && count[ti->seqcount] >= ti->seq.count)
+            {
+                break;
+            }
+
+            __sync_add_and_fetch(&count[ti->seqcount], 1);
+        }
+
+        // Check time.
+        if (ti->seq.time > 0 && time(NULL) >= end)
+        {
+            break;
+        }
+
         // Create rand_r() seed.
         unsigned int seed;
 
@@ -435,23 +452,6 @@ void *threadhdl(void *data)
         if (ti->cmd.verbose && sent > 0)
         {
             fprintf(stdout, "Sent %d bytes of data from %s:%d to %s:%d.\n", sent, (ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip, srcport, ti->seq.ip.dstip, dstport);
-        }
-
-        // Increase count and check.
-        if (ti->seq.count > 0 || ti->seq.trackcount)
-        {
-            if (ti->seq.count > 0 && count[ti->seqcount] >= ti->seq.count)
-            {
-                break;
-            }
-
-            __sync_add_and_fetch(&count[ti->seqcount], 1);
-        }
-
-        // Check time.
-        if (ti->seq.time > 0 && time(NULL) >= end)
-        {
-            break;
         }
 
         // Check data.
