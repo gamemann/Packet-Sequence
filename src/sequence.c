@@ -430,6 +430,19 @@ void *threadhdl(void *data)
             fprintf(stderr, "ERROR - Could not send packet with length %lu :: %s.\n", (ntohs(iph->tot_len) + sizeof(struct ethhdr)), strerror(errno));
         }
 
+        // Increase count and check.
+        if (ti->seq.count > 0 || ti->seq.trackcount)
+        {
+            if (ti->seq.count > 0 && count[ti->seqcount] >= ti->seq.count)
+            {
+                break;
+            }
+
+            __sync_add_and_fetch(&count[ti->seqcount], 1);
+
+            //fprintf(stdout, "Sent %" PRIu64 "/%" PRIu64 "\n", count[ti->seqcount], ti->seq.count);
+        }
+
         // Check time.
         if (ti->seq.time > 0 && time(NULL) >= end)
         {
@@ -439,25 +452,12 @@ void *threadhdl(void *data)
         // Check data.
         if (ti->seq.maxdata > 0)
         {
-            __sync_add_and_fetch(&totaldata[ti->seqcount], ntohs(iph->tot_len) + sizeof(struct ethhdr));
-
             if (totaldata[ti->seqcount] >= ti->seq.maxdata)
             {
                 break;
             }
-        }
 
-        // Increase count and check.
-        if (ti->seq.count > 0 || ti->seq.trackcount)
-        {
-            __sync_add_and_fetch(&count[ti->seqcount], 1);
-
-            //fprintf(stdout, "Sent %" PRIu64 "/%" PRIu64 "\n", count[ti->seqcount], ti->seq.count);
-
-            if (ti->seq.count > 0 && count[ti->seqcount] >= ti->seq.count)
-            {
-                break;
-            }
+            __sync_add_and_fetch(&totaldata[ti->seqcount], ntohs(iph->tot_len) + sizeof(struct ethhdr));
         }
     }
 
