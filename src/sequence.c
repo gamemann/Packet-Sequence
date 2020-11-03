@@ -486,7 +486,7 @@ void *threadhdl(void *data)
  * @param seq A singular sequence structure containing relevant information for the packet.
  * @return void
  */
-void seqsend(const char *interface, struct sequence seq)
+void seqsend(const char *interface, struct sequence seq, uint16_t seqc)
 {
     // Create new threadinfo structure to pass to threads.
     struct threadinfo ti = {0};
@@ -520,8 +520,8 @@ void seqsend(const char *interface, struct sequence seq)
         pthread_create(&pid[i], NULL, threadhdl, (void *)tidup);
     }
 
-    // Wait.
-    if (seq.block)
+    // Check for block or if this is the last sequence (we'd want to join threads so the main thread exits after completion).
+    if (seq.block || (seqcount - 1) >= seqc)
     {
         for (int i = 0; i < threads; i++)
         {

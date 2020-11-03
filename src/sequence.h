@@ -6,6 +6,7 @@
 #include "config.h"
 
 #define MAXPCKTLEN 0xFFFF
+#define MAXTHREADS 4096
 
 struct threadinfo
 {
@@ -14,5 +15,5 @@ struct threadinfo
     uint16_t seqcount;
 };
 
-void seqsend(const char *interface, struct sequence seq);
+void seqsend(const char *interface, struct sequence seq, uint16_t seqc);
 void seqrecv(const char interface, struct sequence seq);

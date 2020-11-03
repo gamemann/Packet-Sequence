@@ -2,20 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
 
 #include "pcktseq.h"
 #include "config.h"
 #include "cmdline.h"
 #include "sequence.h"
 #include "utils.h"
-
-uint8_t cont = 1;
-
-void signalhndl(int tmp)
-{
-    cont = 0;
-}
 
 int main(int argc, char *argv[])
 {
@@ -51,7 +43,7 @@ int main(int argc, char *argv[])
         // If this is for sending, execute sendseq().
         if (cfg.seq[i].send)
         {
-            seqsend(cfg.interface, cfg.seq[i]);
+            seqsend(cfg.interface, cfg.seq[i], seqc);
         }
     }
 
@@ -85,14 +77,7 @@ int main(int argc, char *argv[])
     }
     */
 
-    // Create signals.
-    signal(SIGINT, signalhndl);
-
-    // Sleep to avoid program from closing.
-    while (cont)
-    {
-        sleep(1);
-    }
+   fprintf(stdout, "Completed %d sequences!\n", seqc);
 
     // Close program successfully.
     return EXIT_SUCCESS;
