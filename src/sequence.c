@@ -28,7 +28,6 @@
 
 #include "csum.h"
 
-uint16_t threadsremaining;
 uint64_t count[MAXSEQUENCES];
 uint64_t totaldata[MAXSEQUENCES];
 uint16_t seqcount;
@@ -475,12 +474,6 @@ void *threadhdl(void *data)
     // Close socket.
     close(sockfd);
 
-    // Decrease thread remaining count for block mode.
-    if (threadsremaining > 0)
-    {
-        threadsremaining--;
-    }
-
     pthread_exit(NULL);
 }
 
@@ -505,11 +498,6 @@ void seqsend(const char *interface, struct sequence seq, uint16_t seqc, struct c
 
     // Create the threads needed.
     int threads = (seq.threads > 0) ? seq.threads : get_nprocs();
-
-    if (seq.block)
-    {
-        threadsremaining = threads;
-    }
 
     // Reset count and total data for this sequence.
     count[seqcount] = 0;
