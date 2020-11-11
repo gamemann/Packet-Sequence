@@ -618,7 +618,7 @@ void clearsequence(struct config *cfg, int seqnum)
 {
     cfg->seq[seqnum].send = 1;
     cfg->seq[seqnum].block = 1;
-    cfg->seq[seqnum].count = 5;
+    cfg->seq[seqnum].count = 0;
     cfg->seq[seqnum].threads = 0;
     cfg->seq[seqnum].time = 0;
     cfg->seq[seqnum].delay = 1000000;
