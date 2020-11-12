@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
         }
     }
 
-   fprintf(stdout, "Completed %d sequences!\n", seqc);
+    fprintf(stdout, "Completed %d sequences!\n", seqc);
 
     // Close program successfully.
     return EXIT_SUCCESS;
