@@ -123,7 +123,7 @@ char *randomip(char *range, uint64_t *pcktcount)
     // Generate a random number using rand_r(&seed).
     uint32_t randnum = rand_r(&seed);
 
-    // Attempt to pick a random IP from the CIDR range. We shift left by the CIDR range since it's big endian. 
+    // Generate new 32-bit IPv4 address from IP/CIDR range above.
     uint32_t randip = (ipaddr & ~mask) | (mask & randnum);
 
     // Convert the new IP to a string and print it.
