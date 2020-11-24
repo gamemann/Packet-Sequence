@@ -1,6 +1,6 @@
 # Packet Sequence (WIP)
 ## Description
-This is a tool that may be used to send single or multiple outbound packets in sequences. Each sequence may contain different packet characteristics and you may apply limits such as max packet count, time (in seconds), maximum data (in bytes) to each sequence.
+This is a tool that may be used to send single or multiple outbound packets in sequences. Each sequence may contain different packet characteristics and you may apply limits such as max packet count, time (in seconds), and maximum data (in bytes) to each sequence.
 
 **Note #1** - Please use this tool at your **own risk**. I am **not** responsible for any damage done and do **not** support using this tool for illegal operations such as targeted (D)DoS attacks. This tool was primarily made for pen-testing.
 
