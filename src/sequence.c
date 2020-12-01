@@ -79,23 +79,14 @@ void *threadhdl(void *data)
     {
         // Split argument by space.
         char *split;
+        char *rest = strdup(ti->seq.payload.exact);
 
-        // Create temporary string.
-        char *str = malloc((strlen(ti->seq.payload.exact) + 1) * sizeof(char));
-        strcpy(str, ti->seq.payload.exact);
-
-        split = strtok(str, " ");
-
-        while (split != NULL)
+        while ((split = strtok_r(rest, " ", &rest)))
         {
             sscanf(split, "%2hhx", &payload[exactpayloadlen]);
             
             exactpayloadlen++;
-            split = strtok(NULL, " ");
         }
-
-        // Free temporary string.
-        free(str);
     }
 
     // Create sockaddr_ll struct.
