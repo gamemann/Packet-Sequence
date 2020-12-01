@@ -49,8 +49,6 @@ void *threadhdl(void *data)
     uint8_t dmac[ETH_ALEN];
     uint8_t payload[MAXPCKTLEN];
     uint16_t exactpayloadlen = 0;
-    uint16_t id = 0;
-    uint8_t ttl = 0;
 
     // Let's first start off by checking if the source MAC address is set within the config.
     if (ti->seq.eth.smac != NULL)
@@ -291,26 +289,22 @@ void *threadhdl(void *data)
         // TTL field.
         if (ti->seq.ip.ttl < 1)
         {
-            ttl = randnum(ti->seq.ip.minttl, ti->seq.ip.maxttl, seed);
+            iph->ttl = randnum(ti->seq.ip.minttl, ti->seq.ip.maxttl, seed);
         }
         else
         {
-            ttl = ti->seq.ip.ttl;
+            iph->ttl = ti->seq.ip.ttl;
         }
-
-        iph->ttl = ttl;
 
         // ID field.
         if (ti->seq.ip.id < 1)
         {
-            id = randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed);
+            iph->id = randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed);
         }
         else
         {
-            id = ti->seq.ip.id;
+            iph->id = ti->seq.ip.id;
         }
-
-        iph->id = id;
 
         // Source IP.
         struct in_addr saddr;
