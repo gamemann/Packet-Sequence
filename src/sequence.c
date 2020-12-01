@@ -425,7 +425,7 @@ void *threadhdl(void *data)
         uint16_t sent;
 
         // Attempt to send packet.
-        if ((sent = sendto(sockfd, buffer, ntohs(iph->tot_len) + sizeof(struct ethhdr), 0, (struct sockaddr *)&sin, sizeof(sin))) < 0)
+        if ((sent = send(sockfd, buffer, ntohs(iph->tot_len) + sizeof(struct ethhdr), 0)) < 0)
         {
             fprintf(stderr, "ERROR - Could not send packet with length %lu :: %s.\n", (ntohs(iph->tot_len) + sizeof(struct ethhdr)), strerror(errno));
         }
