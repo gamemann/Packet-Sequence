@@ -49,6 +49,7 @@ void *threadhdl(void *data)
     uint8_t dmac[ETH_ALEN];
     uint8_t payload[MAXPCKTLEN];
     uint16_t exactpayloadlen = 0;
+    uint16_t datalen;
 
     // Let's first start off by checking if the source MAC address is set within the config.
     if (ti->seq.eth.smac != NULL)
@@ -85,6 +86,8 @@ void *threadhdl(void *data)
             
             exactpayloadlen++;
         }
+
+        datalen = exactpayloadlen;
     }
 
     // Create sockaddr_ll struct.
@@ -339,13 +342,10 @@ void *threadhdl(void *data)
 
         // Perform payload first so we can calculate checksum for layer-4 header later.
         unsigned char *data = (unsigned char *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4) + l4len);
-        uint16_t datalen;
 
         // Check for custom payload.
         if (exactpayloadlen > 0)
         {
-            datalen = exactpayloadlen;
-
             for (uint16_t i = 0; i < exactpayloadlen; i++)
             {
                 *(data + i) = payload[i];
