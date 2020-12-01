@@ -348,8 +348,7 @@ void *threadhdl(void *data)
 
             for (uint16_t i = 0; i < exactpayloadlen; i++)
             {
-                *data = payload[i];
-                data++;
+                *(data + i) = payload[i];
             }
         }
         else
@@ -359,8 +358,7 @@ void *threadhdl(void *data)
             // Fill out payload with random characters.
             for (uint16_t i = 0; i < datalen; i++)
             {
-                *data = rand_r(&seed);
-                data++;
+                *(data + i) = rand_r(&seed);
             }
         }
 
