@@ -272,7 +272,7 @@ void *threadhdl(void *temp)
                 udph->len = htons(l4len + datalen);
 
                 // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the UDP header's outside of while loop.
-                if ((ti->seq.udp.srcport > 0 && ti->seq.udp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0 && ti->seq.l4csum)
+                if ((ti->seq.udp.srcport > 0 && ti->seq.udp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0)
                 {
                     needl4csum = 0;
                 }
@@ -316,7 +316,7 @@ void *threadhdl(void *temp)
             }
 
             // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the TCP header's checksum here.
-            if (!needlenrecal && (ti->seq.tcp.srcport > 0 && ti->seq.tcp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0 && ti->seq.l4csum)
+            if (!needlenrecal && (ti->seq.tcp.srcport > 0 && ti->seq.tcp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0)
             {
                 needl4csum = 0;
             }
@@ -338,7 +338,7 @@ void *threadhdl(void *temp)
 
                 needlenrecal = 0;
 
-                if (exactpayloadlen > 0 && ti->seq.l4csum)
+                if (exactpayloadlen > 0)
                 {
                     needl4csum = 0;
                 }
@@ -376,17 +376,17 @@ void *threadhdl(void *temp)
         }
 
         // Calculate UDP and ICMP header's checksums.
-        if (!needl4csum && protocol == IPPROTO_UDP)
+        if (!needl4csum && protocol == IPPROTO_UDP && ti->seq.l4csum)
         {
             udph->check = 0;
             udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, l4len + datalen, IPPROTO_UDP, csum_partial(udph, l4len + datalen, 0));
         }
-        else if (!needl4csum && protocol == IPPROTO_TCP)
+        else if (!needl4csum && protocol == IPPROTO_TCP && ti->seq.l4csum)
         {
             tcph->check = 0;
             tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
         }
-        else if (!needl4csum && protocol == IPPROTO_ICMP)
+        else if (!needl4csum && protocol == IPPROTO_ICMP && ti->seq.l4csum)
         {
             icmph->checksum = 0;
             icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
