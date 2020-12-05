@@ -497,6 +497,11 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 {
                                     cfg->seq[*seqnum].payload.maxlen = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
+
+                                if (prevkey != NULL && !strcmp(prevkey, "static"))
+                                {
+                                    cfg->seq[*seqnum].payload.staticdata = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
+                                }
                             }
                             else
                             {

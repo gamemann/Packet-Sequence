@@ -360,6 +360,18 @@ void *threadhdl(void *temp)
         }
     }
 
+    // Check for static payload.
+    if (exactpayloadlen < 1 && ti->seq.payload.staticdata)
+    {
+        datalen = randnum(ti->seq.payload.minlen, ti->seq.payload.maxlen, seed);
+
+        // Fill out payload with random characters.
+        for (uint16_t i = 0; i < datalen; i++)
+        {
+            *(data + i) = rand_r(&seed);
+        }
+    }
+
     // Set ending time.
     time_t end = time(NULL) + ti->seq.time;
 
@@ -450,7 +462,7 @@ void *threadhdl(void *temp)
         }
         
         // Check if we need to calculate random payload.
-        if (exactpayloadlen < 1)
+        if (exactpayloadlen < 1 && !ti->seq.payload.staticdata)
         {
             datalen = randnum(ti->seq.payload.minlen, ti->seq.payload.maxlen, seed);
 
