@@ -271,12 +271,9 @@ void *threadhdl(void *temp)
 
                 udph->len = htons(l4len + datalen);
 
-                // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the UDP header's checksum here.
+                // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the UDP header's outside of while loop.
                 if ((ti->seq.udp.srcport > 0 && ti->seq.udp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0 && ti->seq.l4csum)
                 {
-                    udph->check = 0;
-                    udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, l4len + datalen, IPPROTO_UDP, csum_partial(udph, l4len + datalen, 0));
-
                     needl4csum = 0;
                 }
 
@@ -287,9 +284,9 @@ void *threadhdl(void *temp)
         
         case IPPROTO_TCP:
             tcph = (struct tcphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
-            l4len = sizeof(struct tcphdr);
 
             tcph->doff = 5;
+            l4len = (tcph->doff * 4);
 
             // Check for static source/destination ports.
             if (ti->seq.tcp.srcport > 0)
@@ -310,21 +307,18 @@ void *threadhdl(void *temp)
             tcph->rst = ti->seq.tcp.rst;
             tcph->urg = ti->seq.tcp.urg;
 
-            // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the TCP header's checksum here.
-            if ((exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen) && (ti->seq.tcp.srcport > 0 && ti->seq.tcp.dstport > 0 && ti->seq.ip.srcip != NULL) && ti->seq.l4csum)
-            {
-                datalen = (exactpayloadlen > 0) ? exactpayloadlen : ti->seq.payload.maxlen;
-
-                tcph->check = 0;
-                tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
-
-                needl4csum = 0;
-            }
-
             // Check if we need to do length recalculation later on.
             if (exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen)
             {
+                datalen = (exactpayloadlen > 0) ? exactpayloadlen : ti->seq.payload.maxlen;
+
                 needlenrecal = 0;
+            }
+
+            // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the TCP header's checksum here.
+            if (!needlenrecal && (ti->seq.tcp.srcport > 0 && ti->seq.tcp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0 && ti->seq.l4csum)
+            {
+                needl4csum = 0;
             }
 
             break;
@@ -337,7 +331,7 @@ void *threadhdl(void *temp)
             icmph->code = ti->seq.icmp.code;
             icmph->type = ti->seq.icmp.type;
 
-            // If we have static payload length/data, we can calculate the ICMP header's checksum here.
+            // If we have static payload length/data, we can calculate the ICMP header's checksum outside of while loop.
             if (exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen)
             {
                 datalen = (exactpayloadlen > 0) ? exactpayloadlen : ti->seq.payload.maxlen;
@@ -346,9 +340,6 @@ void *threadhdl(void *temp)
 
                 if (exactpayloadlen > 0 && ti->seq.l4csum)
                 {
-                    icmph->checksum = 0;
-                    icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
-
                     needl4csum = 0;
                 }
             }
@@ -383,6 +374,23 @@ void *threadhdl(void *temp)
         {
             *(data + i) = payload[i];
         }
+
+        // Calculate UDP and ICMP header's checksums.
+        if (!needl4csum && protocol == IPPROTO_UDP)
+        {
+            udph->check = 0;
+            udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, l4len + datalen, IPPROTO_UDP, csum_partial(udph, l4len + datalen, 0));
+        }
+        else if (!needl4csum && protocol == IPPROTO_TCP)
+        {
+            tcph->check = 0;
+            tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
+        }
+        else if (!needl4csum && protocol == IPPROTO_ICMP)
+        {
+            icmph->checksum = 0;
+            icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
+        }
     }
 
     // Check for static payload.
@@ -397,18 +405,26 @@ void *threadhdl(void *temp)
         }
 
         // Recalculate UDP/ICMP checksums and ensure we don't calculate them again in while loop since we don't need to (will improve performance).
-        if (protocol == IPPROTO_UDP && ti->seq.l4csum)
+        if (!needlenrecal)
         {
-            udph->check = 0;
-            udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, l4len + datalen, IPPROTO_UDP, csum_partial(udph, l4len + datalen, 0));
-        }
-        else if (protocol == IPPROTO_ICMP && ti->seq.l4csum)
-        {
-            icmph->checksum = 0;
-            icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
-        }
+            if (protocol == IPPROTO_UDP && ti->seq.l4csum)
+            {
+                udph->check = 0;
+                udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, l4len + datalen, IPPROTO_UDP, csum_partial(udph, l4len + datalen, 0));
+            }
+            if (protocol == IPPROTO_TCP && ti->seq.l4csum)
+            {
+                tcph->check = 0;
+                tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
+            }
+            else if (protocol == IPPROTO_ICMP && ti->seq.l4csum)
+            {
+                icmph->checksum = 0;
+                icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
+            }
 
-        needl4csum = 0;
+            needl4csum = 0;
+        }
     }
 
     // Set ending time.
