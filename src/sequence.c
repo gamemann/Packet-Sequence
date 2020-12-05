@@ -86,8 +86,6 @@ void *threadhdl(void *temp)
             
             exactpayloadlen++;
         }
-
-        datalen = exactpayloadlen;
     }
 
     // Create sockaddr_ll struct.
@@ -257,13 +255,15 @@ void *threadhdl(void *temp)
             // If we have static/same payload length, let's set the UDP header's length here.
             if (exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen)
             {
+                datalen = (exactpayloadlen > 0) ? exactpayloadlen : ti->seq.payload.maxlen;
+
                 udph->len = htons(l4len + datalen);
 
                 // If we have static payload length/data, our source/destination IPs/ports are static, we can calculate the UDP header's checksum here.
-                if ((ti->seq.udp.srcport > 0 && ti->seq.udp.dstport > 0 && ti->seq.ip.srcip != NULL) && ti->seq.l4csum)
+                if ((ti->seq.udp.srcport > 0 && ti->seq.udp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0 && ti->seq.l4csum)
                 {
                     udph->check = 0;
-                    udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, sizeof(struct udphdr) + datalen, IPPROTO_UDP, csum_partial(udph, sizeof(struct udphdr) + datalen, 0));
+                    udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, l4len + datalen, IPPROTO_UDP, csum_partial(udph, l4len + datalen, 0));
 
                     needl4csum = 0;
                 }
@@ -301,6 +301,8 @@ void *threadhdl(void *temp)
             // If we have static payload length/data, our source/destination IPs/ports are static, we can calculate the TCP header's checksum here.
             if ((exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen) && (ti->seq.tcp.srcport > 0 && ti->seq.tcp.dstport > 0 && ti->seq.ip.srcip != NULL) && ti->seq.l4csum)
             {
+                datalen = (exactpayloadlen > 0) ? exactpayloadlen : ti->seq.payload.maxlen;
+
                 tcph->check = 0;
                 tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
 
