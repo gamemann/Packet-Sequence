@@ -651,6 +651,7 @@ void clearsequence(struct config *cfg, int seqnum)
     cfg->seq[seqnum].l4csum = 1;
 
     cfg->seq[seqnum].payload.exact = NULL;
+    cfg->seq[seqnum].payload.staticdata = 0;
     cfg->seq[seqnum].payload.minlen = 0;
     cfg->seq[seqnum].payload.maxlen = 0;
 
