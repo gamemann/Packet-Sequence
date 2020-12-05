@@ -76,8 +76,6 @@ struct payload_opt
     uint16_t minlen;
     uint16_t maxlen;
     unsigned int staticdata : 1;
-    
-    uint16_t len;
 
     char *exact;
 };

@@ -480,12 +480,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             // Check if we're inside the length mapping already.
                             if (inlength)
                             {
-                                // Check for fixed.
-                                if (prevkey != NULL && !strcmp(prevkey, "fixed"))
-                                {
-                                    cfg->seq[*seqnum].payload.len = (uint16_t) atoi((const char *)ev.data.scalar.value);
-                                }
-
                                 // Check for min length.
                                 if (prevkey != NULL && !strcmp(prevkey, "min"))
                                 {
@@ -657,7 +651,6 @@ void clearsequence(struct config *cfg, int seqnum)
     cfg->seq[seqnum].l4csum = 1;
 
     cfg->seq[seqnum].payload.exact = NULL;
-    cfg->seq[seqnum].payload.len = 0;
     cfg->seq[seqnum].payload.minlen = 0;
     cfg->seq[seqnum].payload.maxlen = 0;
 
