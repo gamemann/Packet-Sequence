@@ -325,13 +325,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             }
                             else if (inid)
                             {
-                                // Check for min TTL.
+                                // Check for min ID.
                                 if (prevkey != NULL && !strcmp(prevkey, "minid"))
                                 {
                                     cfg->seq[*seqnum].ip.minid = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
-                                // Check for max TTL.
+                                // Check for max ID.
                                 if (prevkey != NULL && !strcmp(prevkey, "maxid"))
                                 {
                                     cfg->seq[*seqnum].ip.maxid = (uint8_t) atoi((const char *)ev.data.scalar.value);
