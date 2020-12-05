@@ -38,10 +38,10 @@ uint16_t seqcount;
  * @param data Data (struct threadinfo) for the sequence.
  * @return void
  */
-void *threadhdl(void *data)
+void *threadhdl(void *temp)
 {
     // Cast data as thread info.
-    struct threadinfo *ti = (struct threadinfo *)data;
+    struct threadinfo *ti = (struct threadinfo *)temp;
 
     // Let's parse some config values before creating the socket so we know what we're doing.
     uint8_t protocol = IPPROTO_UDP;
@@ -179,11 +179,186 @@ void *threadhdl(void *data)
     }
     */
 
-    // Other packet variables for use inside of loop.
-    uint16_t srcport;
-    uint16_t dstport;
+    /* Our goal below is to set as many things before the while loop as possible since any additional instructions inside the while loop will impact performance. */
+
+    // Some variables to help decide the randomness of our packets.
+    uint8_t needcsum = 1;
+    uint8_t needl4csum = 1;
+    uint8_t needlenrecal = 1;
+
+    // Create rand_r() seed.
+    unsigned int seed;
+
+    // Initialize buffer for the packet itself.
+    char buffer[MAXPCKTLEN];
+
+    // Common packet characteristics.
+    uint8_t l4len;
+
+    // Source IP string for a random-generated IP address.
     char sip[32];
 
+    // Initialize Ethernet header.
+    struct ethhdr *eth = (struct ethhdr *)(buffer);
+
+    // Initialize IP header.
+    struct iphdr *iph = (struct iphdr *)(buffer + sizeof(struct ethhdr));
+
+    // Initialize UDP, TCP, and ICMP headers. Declare them as NULL until we know what protocol we're dealing with.
+    struct udphdr *udph = NULL;
+    struct tcphdr *tcph = NULL;
+    struct icmphdr *icmph = NULL;
+
+    // Fill out Ethernet header.
+    eth->h_proto = htons(ETH_P_IP);
+    memcpy(eth->h_source, smac, ETH_ALEN);
+    memcpy(eth->h_dest, dmac, ETH_ALEN);
+
+    // Fill out IP header generic fields.
+    iph->ihl = 5;
+    iph->version = 4;
+    iph->protocol = protocol;
+    iph->frag_off = 0;
+    iph->tos = ti->seq.ip.tos;
+
+    // Check for static source IP.
+    if (ti->seq.ip.srcip != NULL)
+    {
+        struct in_addr saddr;
+        inet_aton(ti->seq.ip.srcip, &saddr);
+
+        iph->saddr = saddr.s_addr; 
+    }
+
+    // Destination IP.
+    struct in_addr daddr;
+    inet_aton(ti->seq.ip.dstip, &daddr);
+
+    iph->daddr = daddr.s_addr;
+
+    // Handle layer-4 header (UDP, TCP, or ICMP).
+    switch (protocol)
+    {
+        case IPPROTO_UDP:
+            udph = (struct udphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+            l4len = sizeof(struct udphdr);
+
+            // Check for static source/destination ports.
+            if (ti->seq.udp.srcport > 0)
+            {
+                udph->source = htons(ti->seq.udp.srcport);
+            }
+
+            if (ti->seq.udp.dstport > 0)
+            {
+                udph->dest = htons(ti->seq.udp.dstport);
+            }
+
+            // If we have static/same payload length, let's set the UDP header's length here.
+            if (exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen)
+            {
+                udph->len = htons(l4len + datalen);
+
+                // If we have static payload length/data, our source/destination IPs/ports are static, we can calculate the UDP header's checksum here.
+                if ((ti->seq.udp.srcport > 0 && ti->seq.udp.dstport > 0 && ti->seq.ip.srcip != NULL) && ti->seq.l4csum)
+                {
+                    udph->check = 0;
+                    udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, sizeof(struct udphdr) + datalen, IPPROTO_UDP, csum_partial(udph, sizeof(struct udphdr) + datalen, 0));
+
+                    needl4csum = 0;
+                }
+
+                needlenrecal = 0;
+            }
+
+            break;
+        
+        case IPPROTO_TCP:
+            tcph = (struct tcphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+            l4len = sizeof(struct tcphdr);
+
+            tcph->doff = 5;
+
+            // Check for static source/destination ports.
+            if (ti->seq.tcp.srcport > 0)
+            {
+                tcph->source = htons(ti->seq.tcp.srcport);
+            }
+
+            if (ti->seq.tcp.dstport > 0)
+            {
+                tcph->dest = htons(ti->seq.tcp.dstport);
+            }
+
+            // Flags.
+            tcph->syn = ti->seq.tcp.syn;
+            tcph->ack = ti->seq.tcp.ack;
+            tcph->psh = ti->seq.tcp.psh;
+            tcph->fin = ti->seq.tcp.fin;
+            tcph->rst = ti->seq.tcp.rst;
+            tcph->urg = ti->seq.tcp.urg;
+
+            // If we have static payload length/data, our source/destination IPs/ports are static, we can calculate the TCP header's checksum here.
+            if ((exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen) && (ti->seq.tcp.srcport > 0 && ti->seq.tcp.dstport > 0 && ti->seq.ip.srcip != NULL) && ti->seq.l4csum)
+            {
+                tcph->check = 0;
+                tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
+
+                needl4csum = 0;
+            }
+
+            // Check if we need to do length recalculation later on.
+            if (exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen)
+            {
+                needlenrecal = 0;
+            }
+
+            break;
+
+        case IPPROTO_ICMP:
+            icmph = (struct icmphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+            l4len = sizeof(struct icmphdr);
+
+            // Set code and type.
+            icmph->code = ti->seq.icmp.code;
+            icmph->type = ti->seq.icmp.type;
+
+            // If we have static payload length/data, we can calculate the ICMP header's checksum here.
+            if ((exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen))
+            {
+                needlenrecal = 0;
+
+                if (ti->seq.l4csum)
+                {
+                    icmph->checksum = 0;
+                    icmph->checksum = icmp_csum((uint16_t *)icmph, sizeof(struct icmphdr) + datalen);
+
+                    needl4csum = 0;
+                }
+            }
+
+            break;
+    }
+
+    // Check if we can set static IP header length.
+    if (!needlenrecal)
+    {
+        iph->tot_len = htons((iph->ihl * 4) + l4len + datalen);
+    }
+
+    // Initialize payload data.
+    unsigned char *data = (unsigned char *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4) + l4len);
+
+    // Check for exact payload.
+    if (exactpayloadlen > 0)
+    {
+        for (uint16_t i = 0; i < exactpayloadlen; i++)
+        {
+            *(data + i) = payload[i];
+        }
+    }
+
+    // Set ending time.
     time_t end = time(NULL) + ti->seq.time;
 
     // Loop.
@@ -206,24 +381,23 @@ void *threadhdl(void *data)
             break;
         }
 
-        // Create rand_r() seed.
-        unsigned int seed;
-
         seed = time(NULL) ^ count[ti->seqcount];
 
-        // Assign source and destination ports if TCP or UDP.
-        if (protocol == IPPROTO_TCP)
+        /* Assign random IP header values if need to be. */
+
+        // Check for random TTL.
+        if (ti->seq.ip.ttl < 1)
         {
-            srcport = (ti->seq.tcp.srcport == 0) ? randnum(0, 65535, seed) : ti->seq.tcp.srcport;
-            dstport = (ti->seq.tcp.dstport == 0) ? randnum(0, 65535, seed) : ti->seq.tcp.dstport;
-        }
-        else if (protocol == IPPROTO_UDP)
-        {
-            srcport = (ti->seq.udp.srcport == 0) ? randnum(0, 65535, seed) : ti->seq.udp.srcport;
-            dstport = (ti->seq.udp.dstport == 0) ? randnum(0, 65535, seed) : ti->seq.udp.dstport;
+            iph->ttl = randnum(ti->seq.ip.minttl, ti->seq.ip.maxttl, seed);
         }
 
-        // Check if source IP is defined. If not, get a random IP from the ranges.
+        // Check for random ID.
+        if (ti->seq.ip.id < 1)
+        {
+            iph->id = randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed);
+        }
+
+        // Check if source IP is defined. If not, get a random IP from the ranges and assign it to the IP header's source IP.
         if (ti->seq.ip.srcip == NULL)
         {
             // Check if there are ranges.
@@ -265,93 +439,16 @@ void *threadhdl(void *data)
 
                 strcpy(sip, "127.0.0.1");
             }
+
+            // Copy 32-bit IP address to IP header in network byte order.
+            struct in_addr saddr;
+            inet_aton(sip, &saddr);
+
+            iph->saddr = saddr.s_addr;
         }
-
-        // Initialize buffer for packet and layer-4 header's length.
-        char buffer[MAXPCKTLEN];
-        uint8_t l4len;
-
-        // Initialize Ethernet header.
-        struct ethhdr *eth = (struct ethhdr *)(buffer);
-
-        // Fill out Ethernet header.
-        eth->h_proto = htons(ETH_P_IP);
-        memcpy(eth->h_source, smac, ETH_ALEN);
-        memcpy(eth->h_dest, dmac, ETH_ALEN);
-
-        // Initialize IP header.
-        struct iphdr *iph = (struct iphdr *)(buffer + sizeof(struct ethhdr));
-
-        // Fill out IP header generic fields.
-        iph->ihl = 5;
-        iph->version = 4;
-        iph->protocol = protocol;
-        iph->frag_off = 0;
-        iph->tos = ti->seq.ip.tos;
-
-        // TTL field.
-        if (ti->seq.ip.ttl < 1)
-        {
-            iph->ttl = randnum(ti->seq.ip.minttl, ti->seq.ip.maxttl, seed);
-        }
-        else
-        {
-            iph->ttl = ti->seq.ip.ttl;
-        }
-
-        // ID field.
-        if (ti->seq.ip.id < 1)
-        {
-            iph->id = randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed);
-        }
-        else
-        {
-            iph->id = ti->seq.ip.id;
-        }
-
-        // Source IP.
-        struct in_addr saddr;
-        inet_aton((ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip, &saddr);
-
-        iph->saddr = saddr.s_addr;
-
-        // Destination IP.
-        struct in_addr daddr;
-        inet_aton(ti->seq.ip.dstip, &daddr);
-
-        iph->daddr = daddr.s_addr;
-
-        // Retrieve layer-4 header length.
-        switch (protocol)
-        {
-            case IPPROTO_UDP:
-                l4len = sizeof(struct udphdr);
-
-                break;
-            
-            case IPPROTO_TCP:
-                l4len = sizeof(struct tcphdr);
-
-                break;
-
-            case IPPROTO_ICMP:
-                l4len = sizeof(struct icmphdr);
-
-                break;
-        }
-
-        // Perform payload first so we can calculate checksum for layer-4 header later.
-        unsigned char *data = (unsigned char *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4) + l4len);
-
-        // Check for custom payload.
-        if (exactpayloadlen > 0)
-        {
-            for (uint16_t i = 0; i < exactpayloadlen; i++)
-            {
-                *(data + i) = payload[i];
-            }
-        }
-        else
+        
+        // Check if we need to calculate random payload.
+        if (exactpayloadlen < 1)
         {
             datalen = randnum(ti->seq.payload.minlen, ti->seq.payload.maxlen, seed);
 
@@ -362,62 +459,62 @@ void *threadhdl(void *data)
             }
         }
 
-        // Fill out layer-4 header.
+        // Check layer-4 protocols and assign random characteristics if need to be.
         if (protocol == IPPROTO_UDP)
         {
-            struct udphdr *udph = (struct udphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+            // Check for random source port.
+            if (ti->seq.udp.srcport == 0)
+            {
+                udph->source = htons(randnum(0, 65535, seed));
+            }
 
-            udph->source = htons(srcport);
-            udph->dest = htons(dstport);
-            udph->len = htons(l4len + datalen);
+            // Check for random destination port.
+            if (ti->seq.udp.dstport == 0)
+            {
+                udph->dest = htons(randnum(0, 65535, seed));
+            }
 
-            if (ti->seq.l4csum)
+            // Check for UDP length recalculation.
+            if (needlenrecal)
+            {
+                udph->len = htons(l4len + datalen);
+            }
+
+            // Check for UDP checksum recalculation.
+            if (needl4csum && ti->seq.l4csum)
             {
                 udph->check = 0;
-                udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, sizeof(struct udphdr) + datalen, IPPROTO_UDP, csum_partial(udph, sizeof(struct udphdr) + datalen, 0));
+                udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, sizeof(struct udphdr) + datalen, IPPROTO_UDP, csum_partial(udph, sizeof(struct udphdr) + datalen, 0));   
             }
         }
         else if (protocol == IPPROTO_TCP)
         {
-            struct tcphdr *tcph = (struct tcphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
+            if (ti->seq.tcp.srcport == 0)
+            {
+                tcph->source = htons(randnum(0, 65535, seed));
+            }
 
-            tcph->doff = 5;
-            tcph->source = htons(srcport);
-            tcph->dest = htons(dstport);
-            
-            // Flags.
-            tcph->syn = ti->seq.tcp.syn;
-            tcph->ack = ti->seq.tcp.ack;
-            tcph->psh = ti->seq.tcp.psh;
-            tcph->fin = ti->seq.tcp.fin;
-            tcph->rst = ti->seq.tcp.rst;
-            tcph->urg = ti->seq.tcp.urg;
+            if (ti->seq.tcp.dstport == 0)
+            {
+                tcph->dest = htons(randnum(0, 65535, seed));
+            }
 
-            if (ti->seq.l4csum)
+            // Check if we need to calculate checksum.
+            if (needl4csum && ti->seq.l4csum)
             {
                 tcph->check = 0;
-                tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));
+                tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));   
             }
         }
-        else
+
+        // Check for length recalculation for IP header.
+        if (needlenrecal)
         {
-            struct icmphdr *icmph = (struct icmphdr *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4));
-
-            icmph->code = ti->seq.icmp.code;
-            icmph->type = ti->seq.icmp.type;
-
-            if (ti->seq.l4csum)
-            {
-                icmph->checksum = 0;
-                icmph->checksum = icmp_csum((uint16_t *)icmph, sizeof(struct icmphdr) + datalen);
-            }
+            iph->tot_len = htons((iph->ihl * 4) + l4len + datalen);
         }
 
-        // Calculate IP header length.
-        iph->tot_len = htons((iph->ihl * 4) + l4len + datalen);
-
-        // IP header checksum.
-        if (ti->seq.ip.csum)
+        // Check if we need to calculate IP checksum.
+        if (needcsum && ti->seq.ip.csum)
         {
             update_iph_checksum(iph);
         }
@@ -433,6 +530,21 @@ void *threadhdl(void *data)
         // Check if we want to send verbose output or not.
         if (ti->cmd.verbose && sent > 0)
         {
+            // Retrieve source and destination ports for UDP/TCP protocols.
+            uint16_t srcport = 0;
+            uint16_t dstport = 0;
+
+            if (protocol == IPPROTO_UDP)
+            {
+                srcport = ntohs(udph->source);
+                dstport = ntohs(udph->dest);
+            }
+            else if (protocol == IPPROTO_TCP)
+            {
+                srcport = ntohs(tcph->source);
+                dstport = ntohs(tcph->dest);
+            }
+
             fprintf(stdout, "Sent %d bytes of data from %s:%d to %s:%d.\n", sent, (ti->seq.ip.srcip != NULL) ? ti->seq.ip.srcip : sip, srcport, ti->seq.ip.dstip, dstport);
         }
 
