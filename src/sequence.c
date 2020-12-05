@@ -362,6 +362,17 @@ void *threadhdl(void *temp)
         iph->tot_len = htons((iph->ihl * 4) + l4len + datalen);
     }
 
+    // Check if we need to calculate the IP checksum later on or not. If not, calculate now.
+    if (ti->seq.ip.minttl == ti->seq.ip.maxttl && ti->seq.ip.minid == ti->seq.ip.maxid && ti->seq.ip.srcip != NULL && !needlenrecal)
+    {
+        needcsum = 0;
+
+        if (ti->seq.ip.csum)
+        {
+            update_iph_checksum(iph);
+        }
+    }
+
     // Initialize payload data.
     unsigned char *data = (unsigned char *)(buffer + sizeof(struct ethhdr) + (iph->ihl * 4) + l4len);
 
