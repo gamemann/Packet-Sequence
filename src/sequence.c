@@ -326,14 +326,16 @@ void *threadhdl(void *temp)
             icmph->type = ti->seq.icmp.type;
 
             // If we have static payload length/data, we can calculate the ICMP header's checksum here.
-            if ((exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen))
+            if (exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen)
             {
+                datalen = (exactpayloadlen > 0) ? exactpayloadlen : ti->seq.payload.maxlen;
+
                 needlenrecal = 0;
 
-                if (ti->seq.l4csum)
+                if (exactpayloadlen > 0 && ti->seq.l4csum)
                 {
                     icmph->checksum = 0;
-                    icmph->checksum = icmp_csum((uint16_t *)icmph, sizeof(struct icmphdr) + datalen);
+                    icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
 
                     needl4csum = 0;
                 }
@@ -370,6 +372,20 @@ void *threadhdl(void *temp)
         {
             *(data + i) = rand_r(&seed);
         }
+
+        // Recalculate UDP/ICMP checksums and ensure we don't calculate L4 checksum again in while loop since we don't need to.
+        if (protocol == IPPROTO_UDP && ti->seq.l4csum)
+        {
+            udph->check = 0;
+            udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, l4len + datalen, IPPROTO_UDP, csum_partial(udph, l4len + datalen, 0));
+        }
+        else if (protocol == IPPROTO_ICMP && ti->seq.l4csum)
+        {
+            icmph->checksum = 0;
+            icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
+        }
+
+        needl4csum = 0;
     }
 
     // Set ending time.
@@ -520,7 +536,15 @@ void *threadhdl(void *temp)
                 tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));   
             }
         }
-
+        else if (protocol == IPPROTO_ICMP)
+        {
+            if (needl4csum && ti->seq.l4csum)
+            {
+                icmph->checksum = 0;
+                icmph->checksum = icmp_csum((uint16_t *)icmph, l4len + datalen);
+            }
+        }
+        
         // Check for length recalculation for IP header.
         if (needlenrecal)
         {
