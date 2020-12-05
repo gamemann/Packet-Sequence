@@ -32,12 +32,10 @@ struct ip_opt
     // Time to Live.
     uint8_t minttl;
     uint8_t maxttl;
-    uint8_t ttl;
 
     // ID.
     uint16_t minid;
     uint16_t maxid;
-    uint16_t id;
 
     // Do checksum.
     unsigned int csum : 1;

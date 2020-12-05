@@ -311,12 +311,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             // Check if we're within the TTL mapping.
                             if (inttl)
                             {
-                                // Check for exact TTL.
-                                if (prevkey != NULL && !strcmp(prevkey, "exact"))
-                                {
-                                    cfg->seq[*seqnum].ip.ttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
-                                }
-
                                 // Check for min TTL.
                                 if (prevkey != NULL && !strcmp(prevkey, "minttl"))
                                 {
@@ -331,12 +325,6 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             }
                             else if (inid)
                             {
-                                // Check for exact TTL.
-                                if (prevkey != NULL && !strcmp(prevkey, "exact"))
-                                {
-                                    cfg->seq[*seqnum].ip.id = (uint16_t) atoi((const char *)ev.data.scalar.value);
-                                }
-
                                 // Check for min TTL.
                                 if (prevkey != NULL && !strcmp(prevkey, "minid"))
                                 {
@@ -629,10 +617,10 @@ void clearsequence(struct config *cfg, int seqnum)
     cfg->seq[seqnum].ip.dstip = NULL;
     cfg->seq[seqnum].ip.protocol = NULL;
     cfg->seq[seqnum].ip.tos = 0;
-    cfg->seq[seqnum].ip.minttl = 0;
-    cfg->seq[seqnum].ip.maxttl = 0;
-    cfg->seq[seqnum].ip.ttl = 64;
+    cfg->seq[seqnum].ip.minttl = 64;
+    cfg->seq[seqnum].ip.maxttl = 64;
     cfg->seq[seqnum].ip.csum = 1;
+
     
     cfg->seq[seqnum].udp.srcport = 0;
     cfg->seq[seqnum].udp.dstport = 0;

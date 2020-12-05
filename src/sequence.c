@@ -219,6 +219,18 @@ void *threadhdl(void *temp)
     iph->frag_off = 0;
     iph->tos = ti->seq.ip.tos;
 
+    // Check for static TTL.
+    if (ti->seq.ip.minttl == ti->seq.ip.maxttl)
+    {
+        iph->ttl = ti->seq.ip.maxttl;
+    }
+
+    // Check for static ID.
+    if (ti->seq.ip.minid == ti->seq.ip.maxid)
+    {
+        iph->id = ti->seq.ip.maxid;
+    }
+
     // Check for static source IP.
     if (ti->seq.ip.srcip != NULL)
     {
@@ -416,13 +428,13 @@ void *threadhdl(void *temp)
         /* Assign random IP header values if need to be. */
 
         // Check for random TTL.
-        if (ti->seq.ip.ttl < 1)
+        if (ti->seq.ip.minttl != ti->seq.ip.maxttl)
         {
             iph->ttl = randnum(ti->seq.ip.minttl, ti->seq.ip.maxttl, seed);
         }
 
         // Check for random ID.
-        if (ti->seq.ip.id < 1)
+        if (ti->seq.ip.minid != ti->seq.ip.maxid)
         {
             iph->id = randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed);
         }
