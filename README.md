@@ -216,34 +216,34 @@ Configuration can be found below:
 interface: "ens18"
 
 sequences:
-        one:
-                send: true
-                block: true
-                delay: 0
-                count: 0
-                time: 60
+    one:
+        send: true
+        block: true
+        delay: 0
+        count: 0
+        time: 60
 
-                eth:
-                        smac: "1a:c4:df:70:d8:a6"
-                        dmac: "ae:21:14:4b:3a:6d"
+        eth:
+            smac: "1a:c4:df:70:d8:a6"
+            dmac: "ae:21:14:4b:3a:6d"
 
-                ip:
-                        protocol: udp
-                        csum: true
-                        srcip: "10.50.0.3"
-                        dstip: "10.50.0.4"
+        ip:
+            protocol: udp
+            csum: true
+            srcip: "10.50.0.3"
+            dstip: "10.50.0.4"
 
-                l4csum: true
+        l4csum: true
 
-                udp:
-                        srcport: 27000
-                        dstport: 8898
+        udp:
+            srcport: 27000
+            dstport: 8898
 
-                payload:
-                        length:
-                                min: 61000
-                                max: 61000
-                                static: true
+        payload:
+            length:
+                min: 61000
+                max: 61000
+                static: true
 ```
 
 This is a simple UDP flood that lasts 60 seconds.
