@@ -259,7 +259,7 @@ void *threadhdl(void *temp)
 
                 udph->len = htons(l4len + datalen);
 
-                // If we have static payload length/data, our source/destination IPs/ports are static, we can calculate the UDP header's checksum here.
+                // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the UDP header's checksum here.
                 if ((ti->seq.udp.srcport > 0 && ti->seq.udp.dstport > 0 && ti->seq.ip.srcip != NULL) && exactpayloadlen > 0 && ti->seq.l4csum)
                 {
                     udph->check = 0;
@@ -298,7 +298,7 @@ void *threadhdl(void *temp)
             tcph->rst = ti->seq.tcp.rst;
             tcph->urg = ti->seq.tcp.urg;
 
-            // If we have static payload length/data, our source/destination IPs/ports are static, we can calculate the TCP header's checksum here.
+            // If we have static payload length/data or our source/destination IPs/ports are static, we can calculate the TCP header's checksum here.
             if ((exactpayloadlen > 0 || ti->seq.payload.minlen == ti->seq.payload.maxlen) && (ti->seq.tcp.srcport > 0 && ti->seq.tcp.dstport > 0 && ti->seq.ip.srcip != NULL) && ti->seq.l4csum)
             {
                 datalen = (exactpayloadlen > 0) ? exactpayloadlen : ti->seq.payload.maxlen;
@@ -373,7 +373,7 @@ void *threadhdl(void *temp)
             *(data + i) = rand_r(&seed);
         }
 
-        // Recalculate UDP/ICMP checksums and ensure we don't calculate L4 checksum again in while loop since we don't need to.
+        // Recalculate UDP/ICMP checksums and ensure we don't calculate them again in while loop since we don't need to (will improve performance).
         if (protocol == IPPROTO_UDP && ti->seq.l4csum)
         {
             udph->check = 0;
