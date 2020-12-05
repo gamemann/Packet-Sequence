@@ -619,6 +619,8 @@ void clearsequence(struct config *cfg, int seqnum)
     cfg->seq[seqnum].ip.tos = 0;
     cfg->seq[seqnum].ip.minttl = 64;
     cfg->seq[seqnum].ip.maxttl = 64;
+    cfg->seq[seqnum].ip.minid = 0;
+    cfg->seq[seqnum].ip.maxid = 64000;
     cfg->seq[seqnum].ip.csum = 1;
 
     
