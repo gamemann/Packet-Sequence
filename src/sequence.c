@@ -228,7 +228,7 @@ void *threadhdl(void *temp)
     // Check for static ID.
     if (ti->seq.ip.minid == ti->seq.ip.maxid)
     {
-        iph->id = ti->seq.ip.maxid;
+        iph->id = htons(ti->seq.ip.maxid);
     }
 
     // Check for static source IP.
@@ -436,7 +436,7 @@ void *threadhdl(void *temp)
         // Check for random ID.
         if (ti->seq.ip.minid != ti->seq.ip.maxid)
         {
-            iph->id = randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed);
+            iph->id = htons(randnum(ti->seq.ip.minid, ti->seq.ip.maxid, seed));
         }
 
         // Check if source IP is defined. If not, get a random IP from the ranges and assign it to the IP header's source IP.
