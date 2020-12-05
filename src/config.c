@@ -311,8 +311,8 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             // Check if we're within the TTL mapping.
                             if (inttl)
                             {
-                                // Check for fixed TTL.
-                                if (prevkey != NULL && !strcmp(prevkey, "fixed"))
+                                // Check for exact TTL.
+                                if (prevkey != NULL && !strcmp(prevkey, "exact"))
                                 {
                                     cfg->seq[*seqnum].ip.ttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
@@ -331,8 +331,8 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             }
                             else if (inid)
                             {
-                                // Check for fixed TTL.
-                                if (prevkey != NULL && !strcmp(prevkey, "fixed"))
+                                // Check for exact TTL.
+                                if (prevkey != NULL && !strcmp(prevkey, "exact"))
                                 {
                                     cfg->seq[*seqnum].ip.id = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
