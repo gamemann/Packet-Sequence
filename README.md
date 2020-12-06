@@ -108,18 +108,18 @@ sequences:
 
         # UDP header options.
         udp:
-            # The source port. If 0, the program will generate a random port between 0 and 65535.
+            # The source port. If 0, the program will generate a random port between 1 and 65535.
             srcport: 0
 
-            # The destination port. If 0, the program will generate a random port between 0 and 65535.
+            # The destination port. If 0, the program will generate a random port between 1 and 65535.
             dstport: 0
 
         # TCP header options.
         tcp:
-            # The source port. If 0, the program will generate a random port between 0 and 65535.
+            # The source port. If 0, the program will generate a random port between 1 and 65535.
             srcport: 0
 
-            # The destination port. If 0, the program will generate a random port between 0 and 65535.
+            # The destination port. If 0, the program will generate a random port between 1 and 65535.
             dstport: 0
 
             # If true, will set the TCP SYN flag.
