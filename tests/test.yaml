@@ -39,5 +39,5 @@ sequences:
     l4csum: True
     payload:
       length:
-        max: 1400
         min: 500
+        max: 1400
