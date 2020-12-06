@@ -661,11 +661,11 @@ void seqsend(const char *interface, struct sequence seq, uint16_t seqc, struct c
     // First, let's check if the destination IP is set.
     if (seq.ip.dstip == NULL)
     {
-        fprintf(stdout, "Destination IP not set on sequence #%" PRIu16 ". Not moving forward with this sequence.\n", seqc);
+        fprintf(stdout, "Destination IP not set on sequence #%" PRIu16 ". Not moving forward with this sequence.\n", seqcount);
 
         return;
     }
-    
+
     // Create new threadinfo structure to pass to threads.
     struct threadinfo ti = {0};
 
