@@ -41,7 +41,7 @@ sequences:
         count: 0
 
         # The maximum bytes this sequence can produce before terminating.
-        maxdata: 0
+        data: 0
 
         # How long in seconds this sequence can go on before terminating.
         time: 0
@@ -86,18 +86,18 @@ sequences:
             # The Time-To-Live field (8-bit integer). For static, set min and max to the same value.
             ttl:
                 # Each packet generated will pick a random TTL. This is the minimum value within that range.
-                minttl: 0
+                min: 0
 
                 # Each packet generated will pick a random TTL This is the maximum value within that range.
-                maxttl: 0
+                max: 0
             
             # The ID field. For static, set min and max to the same value.
             id:
                 # Each packet generated will pick a random ID. This is the minimum value within that range.
-                minid: 0
+                min: 0
 
                 # Each packet generated will pick a random ID. This is the maximum value within that range.
-                maxid: 0
+                max: 0
 
             # If true, we will calculate the IP header's checksum. If your NIC supports checksum offload with the IP header, disabling this option may improve performance within the program.
             csum: true
@@ -218,9 +218,7 @@ interface: "ens18"
 sequences:
     one:
         send: true
-        block: true
         delay: 0
-        count: 0
         time: 60
 
         eth:
@@ -229,11 +227,17 @@ sequences:
 
         ip:
             protocol: udp
-            csum: true
             srcip: "10.50.0.3"
             dstip: "10.50.0.4"
 
-        l4csum: true
+            # Set static values for better performance.
+            ttl:
+                min: 64
+                max: 64
+
+            id:
+                min: 0
+                max: 0
 
         udp:
             srcport: 27000

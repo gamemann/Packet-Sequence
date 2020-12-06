@@ -312,13 +312,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             if (inttl)
                             {
                                 // Check for min TTL.
-                                if (prevkey != NULL && !strcmp(prevkey, "minttl"))
+                                if (prevkey != NULL && !strcmp(prevkey, "min"))
                                 {
                                     cfg->seq[*seqnum].ip.minttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for max TTL.
-                                if (prevkey != NULL && !strcmp(prevkey, "maxttl"))
+                                if (prevkey != NULL && !strcmp(prevkey, "max"))
                                 {
                                     cfg->seq[*seqnum].ip.maxttl = (uint8_t) atoi((const char *)ev.data.scalar.value);
                                 }
@@ -326,13 +326,13 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             else if (inid)
                             {
                                 // Check for min ID.
-                                if (prevkey != NULL && !strcmp(prevkey, "minid"))
+                                if (prevkey != NULL && !strcmp(prevkey, "min"))
                                 {
                                     cfg->seq[*seqnum].ip.minid = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
                                 // Check for max ID.
-                                if (prevkey != NULL && !strcmp(prevkey, "maxid"))
+                                if (prevkey != NULL && !strcmp(prevkey, "max"))
                                 {
                                     cfg->seq[*seqnum].ip.maxid = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }  
@@ -529,7 +529,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             }
 
                             // Check for max data.
-                            if (prevkey != NULL && !strcmp(prevkey, "maxdata"))
+                            if (prevkey != NULL && !strcmp(prevkey, "data"))
                             {
                                 cfg->seq[*seqnum].maxdata = strtoull((const char *)ev.data.scalar.value, (char **)ev.data.scalar.value, 0);
                             }
