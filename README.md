@@ -27,6 +27,7 @@ This program parses config files using the YAML [syntax](https://docs.ansible.co
 Here is a YAML config showing the default value of every option available at this moment along with a description.
 
 ```yaml
+# The interface to use when sending/(receiving) packets.
 interface: NULL
 
 sequences:
