@@ -534,13 +534,13 @@ void *threadhdl(void *temp)
             // Check for random source port.
             if (ti->seq.udp.srcport == 0)
             {
-                udph->source = htons(randnum(0, 65535, seed));
+                udph->source = htons(randnum(1, 65535, seed));
             }
 
             // Check for random destination port.
             if (ti->seq.udp.dstport == 0)
             {
-                udph->dest = htons(randnum(0, 65535, seed));
+                udph->dest = htons(randnum(1, 65535, seed));
             }
 
             // Check for UDP length recalculation.
@@ -560,12 +560,12 @@ void *threadhdl(void *temp)
         {
             if (ti->seq.tcp.srcport == 0)
             {
-                tcph->source = htons(randnum(0, 65535, seed));
+                tcph->source = htons(randnum(1, 65535, seed));
             }
 
             if (ti->seq.tcp.dstport == 0)
             {
-                tcph->dest = htons(randnum(0, 65535, seed));
+                tcph->dest = htons(randnum(1, 65535, seed));
             }
 
             // Check if we need to calculate checksum.
