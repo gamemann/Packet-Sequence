@@ -143,26 +143,18 @@ void *threadhdl(void *temp)
     int sockfd;
 
     // Attempt to create socket and also check for TCP cooked socket.
+    uint8_t sockdomain = AF_PACKET;
     uint8_t socktype = SOCK_RAW;
     uint8_t sockproto = IPPROTO_RAW;
 
     if (protocol == IPPROTO_TCP && ti->seq.tcp.usetcpsocket)
     {
+        sockdomain = AF_INET;
         socktype = SOCK_STREAM;
-        sockproto = IPPROTO_TCP;
-
-        int one = 1;
-
-        // Since we're setting up a TCP socket, we need to tell it we want to specify our own Ethernet and IP headers.
-        if (setsockopt(sockfd, SOL_SOCKET, IP_HDRINCL, &one, sizeof(one)) != 0)
-        {
-            fprintf(stderr, "ERROR - Could not set IP_HDRINCL socket option :: %s.\n", strerror(errno));
-
-            pthread_exit(NULL);
-        }
+        sockproto = 0;
     }
 
-    if ((sockfd = socket(AF_PACKET, socktype, sockproto)) < 0)
+    if ((sockfd = socket(sockdomain, socktype, sockproto)) < 0)
     {
         fprintf(stderr, "ERROR - Could not setup socket :: %s.\n", strerror(errno));
 
@@ -198,26 +190,38 @@ void *threadhdl(void *temp)
         getgwmac((uint8_t *) &dmac);
     }
 
-    // Attempt to bind socket.
-    if (bind(sockfd, (struct sockaddr *)&sin, sizeof(sin)) != 0)
-    {
-        fprintf(stderr, "ERROR - Cannot bind to socket :: %s.\n", strerror(errno));
-
-        pthread_exit(NULL);
-    }
-
     // If TCP cooked socket, try to connect.
-    /*
-    if (ti->seq.tcp.usetcpsocket)
+    if (protocol == IPPROTO_TCP && ti->seq.tcp.usetcpsocket)
     {
-        if (connect(sockfd, (struct sockaddr *)&sin, sizeof(sin)) != 0)
+        // We'll want to construct a sockaddr_in instead.
+        struct sockaddr_in tcpsin;
+        tcpsin.sin_family = AF_INET;
+
+        // Set destination IP and port (they must be static in order for TCP socket to work).
+        struct in_addr daddr;
+        inet_aton(ti->seq.ip.dstip, &daddr);
+
+        tcpsin.sin_addr.s_addr = daddr.s_addr;
+        tcpsin.sin_port = htons(ti->seq.tcp.dstport);
+        memset(&tcpsin.sin_zero, 0, sizeof(tcpsin.sin_zero));
+        
+        if (connect(sockfd, (struct sockaddr *)&tcpsin, sizeof(tcpsin)) != 0)
         {
-            fprintf(stderr, "ERROR - Cannot connect to TCP socket :: %s.\n", strerror(errno));
+            fprintf(stderr, "ERROR - Cannot connect to destination using cooked sockets :: %s.\n", strerror(errno));
 
             pthread_exit(NULL);
         }
     }
-    */
+    else
+    {
+        // Attempt to bind socket.
+        if (bind(sockfd, (struct sockaddr *)&sin, sizeof(sin)) != 0)
+        {
+            fprintf(stderr, "ERROR - Cannot bind to socket :: %s.\n", strerror(errno));
+
+            pthread_exit(NULL);
+        }
+    }
 
     /* Our goal below is to set as many things before the while loop as possible since any additional instructions inside the while loop will impact performance. */
 
@@ -472,6 +476,9 @@ void *threadhdl(void *temp)
     // Set ending time.
     time_t end = time(NULL) + ti->seq.time;
 
+    // For TCP cooked socket (exclude headers).
+    unsigned char *cooksend = (unsigned char *) buffer + sizeof(struct ethhdr) + (iph->ihl * 4) + sizeof(struct tcphdr);
+
     // Loop.
     while (1)
     {
@@ -641,9 +648,19 @@ void *threadhdl(void *temp)
         uint16_t sent;
 
         // Attempt to send packet.
-        if ((sent = send(sockfd, buffer, ntohs(iph->tot_len) + sizeof(struct ethhdr), 0)) < 0)
+        if (protocol == IPPROTO_TCP && ti->seq.tcp.usetcpsocket)
         {
-            fprintf(stderr, "ERROR - Could not send packet with length %lu :: %s.\n", (ntohs(iph->tot_len) + sizeof(struct ethhdr)), strerror(errno));
+            if ((sent = send(sockfd, cooksend, datalen, 0)) < 0)
+            {
+                fprintf(stderr, "ERROR - Could not send TCP (cooked) packet with length %hu :: %s.\n", (ntohs(iph->tot_len)), strerror(errno));
+            }
+        }
+        else
+        {
+            if ((sent = send(sockfd, buffer, ntohs(iph->tot_len) + sizeof(struct ethhdr), 0)) < 0)
+            {
+                fprintf(stderr, "ERROR - Could not send packet with length %lu :: %s.\n", (ntohs(iph->tot_len) + sizeof(struct ethhdr)), strerror(errno));
+            }
         }
 
         // Check if we want to send verbose output or not.
