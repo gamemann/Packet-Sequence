@@ -175,6 +175,9 @@ sequences:
             # If true, the program will read data from the file 'exact' (below) is set to. The data within the file should be in the same format as the 'exact' setting without file support which is hexadecimal and separated by a space (e.g. "FF FF FF FF 59").
             isfile: false
 
+            # If true, will parse the payload (either in 'exact' or the file within 'exact') as a string instead of hexadecimal.
+            isstring: false
+
             # If a string, will set the payload to exactly this value. Each byte should be in hexadecimal and separated by a space. For example: "FF FF FF FF 59" (5 bytes of payload data).
             exact: NULL
 ```
