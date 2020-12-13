@@ -480,6 +480,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                     cfg->seq[*seqnum].payload.maxlen = (uint16_t) atoi((const char *)ev.data.scalar.value);
                                 }
 
+                                // Check for static payload.
                                 if (prevkey != NULL && !strcmp(prevkey, "static"))
                                 {
                                     cfg->seq[*seqnum].payload.staticdata = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
@@ -491,6 +492,12 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 if (prevkey != NULL && !strcmp(prevkey, "exact"))
                                 {
                                     cfg->seq[*seqnum].payload.exact = strdup((const char *)ev.data.scalar.value);
+                                }
+
+                                // Check if payload is file.
+                                if (prevkey != NULL && !strcmp(prevkey, "isfile"))
+                                {
+                                    cfg->seq[*seqnum].payload.isfile = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                                 }
                             }
                         }
@@ -641,6 +648,7 @@ void clearsequence(struct config *cfg, int seqnum)
     cfg->seq[seqnum].l4csum = 1;
 
     cfg->seq[seqnum].payload.exact = NULL;
+    cfg->seq[seqnum].payload.isfile = 0;
     cfg->seq[seqnum].payload.staticdata = 0;
     cfg->seq[seqnum].payload.minlen = 0;
     cfg->seq[seqnum].payload.maxlen = 0;

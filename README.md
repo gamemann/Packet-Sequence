@@ -75,10 +75,10 @@ sequences:
             # The source IPv4 address. If not set, you will need to specify source ranges in CIDR format like the above. If no source IP ranges are set, a warning will be outputted to `stderr` and 127.0.0.1 (localhost) will be used.
             srcip: NULL
 
-            # The destination IPv4 address. If not set, the program will output an error. We require a value.
-            dstip: NULL # Required and cannot be NULL.
+            # The destination IPv4 address. If not set, the program will output an error. We require a value here. Otherwise, the program will shutdown.
+            dstip: NULL
 
-            # The IP protocol to use. At the moment, the supported values are udp, tcp, and icmp.
+            # The IP protocol to use. At the moment, the only supported values are udp, tcp, and icmp.
             protocol: udp
 
             # The Type-Of-Service field (8-bit integer).
@@ -108,18 +108,18 @@ sequences:
 
         # UDP header options.
         udp:
-            # The source port. If 0, the program will generate a random port between 1 and 65535.
+            # The source port. If 0, the program will generate a random number between 1 and 65535.
             srcport: 0
 
-            # The destination port. If 0, the program will generate a random port between 1 and 65535.
+            # The destination port. If 0, the program will generate a random number between 1 and 65535.
             dstport: 0
 
         # TCP header options.
         tcp:
-            # The source port. If 0, the program will generate a random port between 1 and 65535.
+            # The source port. If 0, the program will generate a random number between 1 and 65535.
             srcport: 0
 
-            # The destination port. If 0, the program will generate a random port between 1 and 65535.
+            # The destination port. If 0, the program will generate a random number between 1 and 65535.
             dstport: 0
 
             # If true, will set the TCP SYN flag.
@@ -150,7 +150,7 @@ sequences:
 
         # Payload options.
         payload:
-            # Random generation/length.
+            # Random payload generation/length.
             length:
                 # The minimum payload length in bytes (payload is randomly generated).
                 min: 0
@@ -158,10 +158,13 @@ sequences:
                 # The maximum payload length in bytes (payload is randomly generated).
                 max: 0
 
-                # If true, the program will only generate one payload per thread and generic the UDP/ICMP header's checksum once. In many cases, this will result in a huge performance gain because generating random payload per packet consumes a lot of CPU cycles depending on the payload length.
+                # If true, the program will only generate one payload per thread and generic the checksums once. In many cases, this will result in a huge performance gain because generating random payload per packet consumes a lot of CPU cycles depending on the payload length.
                 static: false
             
-            # If a string, will set the payload to exactly this value. Each byte should be in hexadecimal and seperated by a space. For example: "FF FF FF FF 59" (5 bytes of payload data).
+            # If true, the program will read data from the file 'exact' (below) is set to. The data within the file should be in the same format as the 'exact' setting without file support which is hexadecimal and separated by a space (e.g. "FF FF FF FF 59").
+            isfile: false
+
+            # If a string, will set the payload to exactly this value. Each byte should be in hexadecimal and separated by a space. For example: "FF FF FF FF 59" (5 bytes of payload data).
             exact: NULL
 ```
 
@@ -254,6 +257,11 @@ sequences:
 This is a simple UDP flood that lasts 60 seconds.
 
 This config resulted in my source VM sending **50 - 60 gbps** to my destination VM (all within the same environment as stated above). If `static` was set to `false`, it only resulted in around 10 - 20 gbps. This is because when static is set to false, random payload is generated for each packet. Since the packet length is 61 KBs, this resulted in a lot more load on the processor and whatnot.
+
+### Gaming Laptop Running Ubuntu 20.04 Desktop
+I was able to generate **~905 gbps** between two virtual interfaces on my [gaming laptop](https://www.newegg.com/fortress-gray-asus-tuf-gaming-tuf706iu-as76-gaming-entertainment/p/N82E16834235407) using the `tests/simple_udp_flood.yaml` config. As expected, this didn't use the laptop's NIC, but it shows how much the CPU, RAM, and NVMe can push out.
+
+![Laptop Benchmark](https://g.gflclan.com/linux-laptop-bigmode-14-14-45.png)
 
 ## Additional Notes
 **Note #1** - This program is still in development and I am working to add more features while maintaining high performance. The outbound packet functionality is fully operational. I'm hoping to turn this tool into a network monitor tool by implementing sequence types that can receive specific packets and use the response in later sequences. With that said, I'd like to add an option to send HTTP/HTTPS requests if a receive sequence succeeds or fails after a specific timeout.

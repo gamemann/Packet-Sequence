@@ -76,9 +76,49 @@ void *threadhdl(void *temp)
     // Now check for the payload.
     if (ti->seq.payload.exact != NULL)
     {
+        char *payloadstr = NULL;
+
+        // Check if payload is file.
+        if (ti->seq.payload.isfile)
+        {
+            FILE *fp = fopen(ti->seq.payload.exact, "rb");
+            uint64_t len = 0;
+
+            // Check if our file is invalid. If so, print error and set empty payload string.
+            if (fp == NULL)
+            {
+                fprintf(stderr, "Unable to open payload file (%s) :: %s.\n", ti->seq.payload.exact, strerror(errno));
+                
+                payloadstr = malloc(sizeof(char) * 2);
+                strcpy(payloadstr, "");
+
+                goto skippayload;
+            }
+
+            // Read file and store it in payload string.
+            fseek(fp, 0, SEEK_END);
+            len = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+
+            payloadstr = malloc(len);
+
+            if (payloadstr)
+            {
+                fread(payloadstr, 1, len, fp);
+            }
+
+            fclose(fp);
+        }
+        else
+        {
+            payloadstr = strdup(ti->seq.payload.exact);
+        }
+        
+        skippayload:;
+
         // Split argument by space.
         char *split;
-        char *rest = strdup(ti->seq.payload.exact);
+        char *rest = payloadstr;
 
         while ((split = strtok_r(rest, " ", &rest)))
         {
@@ -86,6 +126,8 @@ void *threadhdl(void *temp)
             
             exactpayloadlen++;
         }
+
+        free(payloadstr);
     }
 
     // Create sockaddr_ll struct.
