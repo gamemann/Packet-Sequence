@@ -37,6 +37,9 @@ sequences:
             - /etc/pcktseq/include_one.yaml
             - /etc/pcktseq/include_two.yaml
 
+        # If set, will use a specific interface for this sequence. Otherwise, uses the default interface specified at the beginning of the config.
+        interface: NULL
+
         # If true, this sequence will send outbound packets. True is the only supported mode at this moment.
         send: true
 
