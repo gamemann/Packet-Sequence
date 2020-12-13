@@ -284,10 +284,11 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         // Check if we're within mappings inside the sequence.
                         if (inincludes)
                         {
-                            fprintf(stdout, "Found an include!\n");
-
                             // Since we don't care about the key, just add onto the structure and increment the count.
                             cfg->seq[*seqnum].includes[cfg->seq[*seqnum].includecount] = strdup((const char *)ev.data.scalar.value);
+
+                            // We're going to parse the include here. The 'includes' MUST be at the beginning of the sequence. Otherwise, it will overwrite the current sequence values.
+                            parseconfig(cfg->seq[*seqnum].includes[cfg->seq[*seqnum].includecount], cfg, 1, seqnum);
 
                             // Increment count.
                             cfg->seq[*seqnum].includecount++;
