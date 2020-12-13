@@ -32,6 +32,11 @@ interface: NULL
 
 sequences:
     seq01:
+        # An array of other configs to include before this sequence. WARNING - If this is used, you must write this at the beginning of the sequence like this example. Otherwise, unexpected results will occur (e.g. the current sequence will be overwritten). This is empty by default and only showing as an example.
+        includes:
+            - /etc/pcktseq/include_one.yaml
+            - /etc/pcktseq/include_two.yaml
+
         # If true, this sequence will send outbound packets. True is the only supported mode at this moment.
         send: true
 
