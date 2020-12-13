@@ -148,6 +148,9 @@ sequences:
             # If true, will set the TCP URG flag.
             urg: false
 
+            # If true, the socket will be setup as a cooked TCP socket. This establishes the three-way TCP handshake. WARNING - This makes the program ignore all of the headers. The only relevant information is the payload, destination IP, and port (must be static) when this is set to true.
+            usetcpsocket: false
+
         # ICMP header options.
         icmp:
             # The code to use with the ICMP packet.
