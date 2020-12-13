@@ -486,9 +486,6 @@ void *threadhdl(void *temp)
     // Set ending time.
     time_t end = time(NULL) + ti->seq.time;
 
-    // For TCP cooked socket (exclude headers).
-    unsigned char *cooksend = (unsigned char *) buffer + sizeof(struct ethhdr) + (iph->ihl * 4) + sizeof(struct tcphdr);
-
     // Loop.
     while (1)
     {
@@ -660,7 +657,7 @@ void *threadhdl(void *temp)
         // Attempt to send packet.
         if (protocol == IPPROTO_TCP && ti->seq.tcp.usetcpsocket)
         {
-            if ((sent = send(sockfd, cooksend, datalen, 0)) < 0)
+            if ((sent = send(sockfd, data, datalen, 0)) < 0)
             {
                 fprintf(stderr, "ERROR - Could not send TCP (cooked) packet with length %hu :: %s.\n", (ntohs(iph->tot_len)), strerror(errno));
             }
