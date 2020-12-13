@@ -82,6 +82,7 @@ struct payload_opt
 struct sequence
 {
     // General options.
+    char *interface;
     unsigned int send : 1;
     unsigned int block : 1;
     uint64_t count;

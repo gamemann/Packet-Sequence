@@ -88,7 +88,7 @@ void *threadhdl(void *temp)
             if (fp == NULL)
             {
                 fprintf(stderr, "Unable to open payload file (%s) :: %s.\n", ti->seq.payload.exact, strerror(errno));
-                
+
                 payloadstr = malloc(sizeof(char) * 2);
                 strcpy(payloadstr, "");
 
@@ -135,7 +135,7 @@ void *threadhdl(void *temp)
 
     // Fill out sockaddr_ll struct.
     sin.sll_family = PF_PACKET;
-    sin.sll_ifindex = if_nametoindex(ti->device);
+    sin.sll_ifindex = if_nametoindex((ti->seq.interface != NULL) ? ti->seq.interface : ti->device);
     sin.sll_protocol = htons(ETH_P_IP);
     sin.sll_halen = ETH_ALEN;
 
@@ -175,7 +175,7 @@ void *threadhdl(void *temp)
         // Receive the interface's MAC address (the source MAC).
         struct ifreq ifr;
         
-        strcpy(ifr.ifr_name, ti->device);
+        strcpy(ifr.ifr_name, (ti->seq.interface != NULL) ? ti->seq.interface : ti->device);
 
         // Attempt to get MAC address.
         if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) != 0)

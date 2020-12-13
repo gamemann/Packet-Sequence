@@ -506,6 +506,12 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                         {
                             // Check for other sequence key => values.
 
+                            // Check for interface override.
+                            if (prevkey != NULL && !strcmp(prevkey, "interface"))
+                            {
+                                cfg->seq[*seqnum].interface = strdup((const char *)ev.data.scalar.value);
+                            }
+
                             // Check for send.
                             if (prevkey != NULL && !strcmp(prevkey, "send"))
                             {
@@ -611,6 +617,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
  */
 void clearsequence(struct config *cfg, int seqnum)
 {
+    cfg->seq[seqnum].interface = NULL;
     cfg->seq[seqnum].send = 1;
     cfg->seq[seqnum].block = 1;
     cfg->seq[seqnum].count = 0;
