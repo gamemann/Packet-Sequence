@@ -523,7 +523,7 @@ void *threadhdl(void *temp)
         }
 
         // Check if source IP is defined. If not, get a random IP from the ranges and assign it to the IP header's source IP.
-        if (ti->seq.ip.srcip == NULL)
+        if (ti->seq.ip.srcip == NULL && !ti->seq.tcp.usetcpsocket)
         {
             // Check if there are ranges.
             if (ti->seq.ip.rangecount > 0)
