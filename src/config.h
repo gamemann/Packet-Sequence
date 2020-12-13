@@ -77,6 +77,7 @@ struct payload_opt
 
     char *exact;
     unsigned int isfile : 1;
+    unsigned int isstring : 1;
 };
 
 struct sequence

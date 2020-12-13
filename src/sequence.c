@@ -116,15 +116,25 @@ void *threadhdl(void *temp)
         
         skippayload:;
 
-        // Split argument by space.
-        char *split;
-        char *rest = payloadstr;
-
-        while ((split = strtok_r(rest, " ", &rest)))
+        // Check if we want to parse the actual string.
+        if (ti->seq.payload.isstring)
         {
-            sscanf(split, "%2hhx", &payload[exactpayloadlen]);
-            
-            exactpayloadlen++;
+            exactpayloadlen = strlen(payloadstr);
+
+            memcpy(payload, payloadstr, exactpayloadlen);
+        }
+        else
+        {
+            // Split argument by space.
+            char *split;
+            char *rest = payloadstr;
+
+            while ((split = strtok_r(rest, " ", &rest)))
+            {
+                sscanf(split, "%2hhx", &payload[exactpayloadlen]);
+                
+                exactpayloadlen++;
+            }
         }
 
         free(payloadstr);

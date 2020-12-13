@@ -500,6 +500,12 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                                 {
                                     cfg->seq[*seqnum].payload.isfile = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
                                 }
+
+                                // Check if payload is string.
+                                if (prevkey != NULL && !strcmp(prevkey, "isstring"))
+                                {
+                                    cfg->seq[*seqnum].payload.isstring = (!strcmp(lowerstr((char *)ev.data.scalar.value), "true")) ? 1 : 0;
+                                }
                             }
                         }
                         else
@@ -657,6 +663,7 @@ void clearsequence(struct config *cfg, int seqnum)
 
     cfg->seq[seqnum].payload.exact = NULL;
     cfg->seq[seqnum].payload.isfile = 0;
+    cfg->seq[seqnum].payload.isstring = 0;
     cfg->seq[seqnum].payload.staticdata = 0;
     cfg->seq[seqnum].payload.minlen = 0;
     cfg->seq[seqnum].payload.maxlen = 0;
