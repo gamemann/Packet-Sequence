@@ -164,7 +164,7 @@ void *threadhdl(void *temp)
         sockproto = 0;
     }
 
-    if ((sockfd = socket(sockdomain, socktype, sockproto)) < 0)
+    if ((protocol != IPPROTO_TCP || !ti->seq.tcp.usetcpsocket) && (sockfd = socket(sockdomain, socktype, sockproto)) < 0)
     {
         fprintf(stderr, "ERROR - Could not setup socket :: %s.\n", strerror(errno));
 
@@ -172,7 +172,7 @@ void *threadhdl(void *temp)
     }
 
     // Check if source MAC address is set properly. If not, let's get the MAC address of the interface we're sending packets out of.
-    if (smac[0] == 0 && smac[1] == 0 && smac[2] == 0 && smac[3] == 0 && smac[4] == 0 && smac[5] == 0)
+    if (smac[0] == 0 && smac[1] == 0 && smac[2] == 0 && smac[3] == 0 && smac[4] == 0 && smac[5] == 0 && !ti->seq.tcp.usetcpsocket)
     {
         // Receive the interface's MAC address (the source MAC).
         struct ifreq ifr;
@@ -200,29 +200,7 @@ void *threadhdl(void *temp)
         getgwmac((uint8_t *) &dmac);
     }
 
-    // If TCP cooked socket, try to connect.
-    if (protocol == IPPROTO_TCP && ti->seq.tcp.usetcpsocket)
-    {
-        // We'll want to construct a sockaddr_in instead.
-        struct sockaddr_in tcpsin;
-        tcpsin.sin_family = AF_INET;
-
-        // Set destination IP and port (they must be static in order for TCP socket to work).
-        struct in_addr daddr;
-        inet_aton(ti->seq.ip.dstip, &daddr);
-
-        tcpsin.sin_addr.s_addr = daddr.s_addr;
-        tcpsin.sin_port = htons(ti->seq.tcp.dstport);
-        memset(&tcpsin.sin_zero, 0, sizeof(tcpsin.sin_zero));
-        
-        if (connect(sockfd, (struct sockaddr *)&tcpsin, sizeof(tcpsin)) != 0)
-        {
-            fprintf(stderr, "ERROR - Cannot connect to destination using cooked sockets :: %s.\n", strerror(errno));
-
-            pthread_exit(NULL);
-        }
-    }
-    else
+    if (protocol != IPPROTO_TCP || !ti->seq.tcp.usetcpsocket)
     {
         // Attempt to bind socket.
         if (bind(sockfd, (struct sockaddr *)&sin, sizeof(sin)) != 0)
@@ -232,7 +210,6 @@ void *threadhdl(void *temp)
             pthread_exit(NULL);
         }
     }
-
     /* Our goal below is to set as many things before the while loop as possible since any additional instructions inside the while loop will impact performance. */
 
     // Some variables to help decide the randomness of our packets.
@@ -486,6 +463,17 @@ void *threadhdl(void *temp)
     // Set ending time.
     time_t end = time(NULL) + ti->seq.time;
 
+    // Setup TCP cooked socket information.
+    struct sockaddr_in tcpsin;
+    tcpsin.sin_family = AF_INET;
+
+    struct in_addr tdaddr;
+    inet_aton(ti->seq.ip.dstip, &tdaddr);
+
+    tcpsin.sin_addr.s_addr = tdaddr.s_addr;
+    tcpsin.sin_port = htons(ti->seq.tcp.dstport);
+    memset(&tcpsin.sin_zero, 0, sizeof(tcpsin.sin_zero));
+
     // Loop.
     while (1)
     {
@@ -630,6 +618,23 @@ void *threadhdl(void *temp)
                 tcph->check = 0;
                 tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, (tcph->doff * 4) + datalen, IPPROTO_TCP, csum_partial(tcph, (tcph->doff * 4) + datalen, 0));   
             }
+
+            if (ti->seq.tcp.usetcpsocket)
+            {
+                if ((sockfd = socket(sockdomain, socktype, sockproto)) < 0)
+                {
+                    fprintf(stderr, "ERROR - Cannot setup TCP cook socket :: %s.\n", strerror(errno));
+
+                    pthread_exit(NULL);
+                }
+
+                if (connect(sockfd, (struct sockaddr *)&tcpsin, sizeof(tcpsin)) != 0)
+                {
+                    fprintf(stderr, "ERROR - Cannot connect to destination using cooked sockets :: %s.\n", strerror(errno));
+
+                    pthread_exit(NULL);
+                }
+            }
         }
         else if (protocol == IPPROTO_ICMP)
         {
@@ -702,6 +707,12 @@ void *threadhdl(void *temp)
             __sync_add_and_fetch(&totaldata[ti->seqcount], ntohs(iph->tot_len) + sizeof(struct ethhdr));
         }
 
+        // Close TCP socket if enabled.
+        if (ti->seq.tcp.usetcpsocket)
+        {
+            close(sockfd);
+        }
+
         // Check for delay.
         if (ti->seq.delay > 0)
         {
@@ -710,7 +721,10 @@ void *threadhdl(void *temp)
     }
 
     // Close socket.
-    close(sockfd);
+    if (!ti->seq.tcp.usetcpsocket)
+    {
+        close(sockfd);
+    }
 
     pthread_exit(NULL);
 }
