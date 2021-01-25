@@ -47,13 +47,14 @@ static struct option longopts[] =
     {"trst", required_argument, NULL, 28},
     {"tfin", required_argument, NULL, 29},
     {"turg", required_argument, NULL, 30},
+    {"tusecooked", required_argument, NULL, 31},
 
-    {"pmin", required_argument, NULL, 31},
-    {"pmax", required_argument, NULL, 32},
-    {"pstatic", required_argument, NULL, 33},
-    {"pexact", required_argument, NULL, 34},
-    {"pfile", required_argument, NULL, 35},
-    {"pstring", required_argument, NULL, 36},
+    {"pmin", required_argument, NULL, 32},
+    {"pmax", required_argument, NULL, 33},
+    {"pstatic", required_argument, NULL, 34},
+    {"pexact", required_argument, NULL, 35},
+    {"pfile", required_argument, NULL, 36},
+    {"pstring", required_argument, NULL, 37},
 
     {"list", no_argument, NULL, 'l'},
     {"verbose", no_argument, NULL, 'v'},
@@ -345,31 +346,36 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
                     break;
 
                 case 31:
-                    cmd->clplmin = atoi(optarg);
+                    cmd->cltcpusecooked = atoi(optarg);
 
                     break;
 
                 case 32:
-                    cmd->clplmax = atoi(optarg);
+                    cmd->clplmin = atoi(optarg);
 
                     break;
 
                 case 33:
-                    cmd->clplstatic = atoi(optarg);
+                    cmd->clplmax = atoi(optarg);
 
                     break;
 
                 case 34:
-                    cmd->clplexact = optarg;
+                    cmd->clplstatic = atoi(optarg);
 
                     break;
 
                 case 35:
-                    cmd->clplfile = atoi(optarg);
+                    cmd->clplexact = optarg;
 
                     break;
 
                 case 36:
+                    cmd->clplfile = atoi(optarg);
+
+                    break;
+
+                case 37:
                     cmd->clplstring = atoi(optarg);
 
                     break;
