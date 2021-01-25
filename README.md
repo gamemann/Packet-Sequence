@@ -21,6 +21,61 @@ Usage: pcktseq -c <configfile> [-v -h]
 
 [![demonstration](https://g.gflclan.com/3536-11-02-2020-0v94za6v.png)](https://www.youtube.com/watch?v=pLg_WMqwgzg)
 
+## Sequence Command Line Options
+There are command line options to replace all values within sequence #0. To use these, first, you'll need to specify the `-z` or `--cli` flag. Afterwards, you may use the following (all related to sequence #0).
+
+```
+--interface => The interface to send out of.
+--send => Whether to make the sequence send or not (only 1 is supported as of right now) (0/1).
+--block => Whether to enable blocking mode (0/1).
+--count => The maximum amount of packets supported.
+--time => How many seconds to run the sequence for maximum.
+--delay => The delay in-between sending packets on each thread.
+--data => The maximum amount of data (in bytes) we can send.
+--trackcount => Keep track of count regardless of it being 0 (read Configuration explanation for more information) (0/1).
+--threads => The amount of threads and sockets to spawn (0 = CPU count).
+--l4csum => Whether to calculate the layer-4 checksum (TCP, UDP, and ICMP) (0/1).
+
+--smac => The ethernet source MAC address to use.
+--dmac => The ethernet destination MAC address to use.
+
+--minttl => The minimum IP TTL to use.
+--maxttl => The maximum IP TTL to use.
+--minid => The minimum IP ID to use.
+--maxid => The maximum IP ID to use.
+--srcip => The source IP (one range is supported in CIDR format).
+--dstip => The destination IP.
+--protocol => The protocol to use (TCP, UDP, or ICMP).
+--tos => The IP TOS to use.
+--l3csum => Whether to calculate the IP header checksum or not (0/1).
+
+--usport => The UDP source port.
+--udport => The UDP destination port.
+
+--tsport => The TCP source port.
+--tdport => The TCP destination port.
+--tsyn => Set the TCP SYN flag (0/1).
+--tack => Set the TCP ACK flag (0/1).
+--tpsh => Set the TCP PSH flag (0/1).
+--trst => Set the TCP RST flag (0/1).
+--tfin => Set the TCP FIN flag (0/1).
+--turg => Set the TCP URG flag (0/1).
+--tcpusecooked => Use TCP cooked socket (0/1).
+
+--pmin => The minimum payload data.
+--pmax => The maximum payload data.
+--pstatic => Use static payload (0/1).
+--pexact => The exact payload string.
+--pfile => Whether to parse a file as the 'pexact' string instead.
+--pstring => Parse the 'pexact' string or file as a string instead of hexadecimal.
+```
+
+### Example
+```
+./pcktseq --cli --srcip 10.50.0.3 --dstip 10.50.0.4 --protocol "udp" --udport 8890 --count 0 --send 1 --interface "ens18" --pmin 30 --pmax 50 --pexact "39 40 20 30 02 03" --usport 3000 --l4csum 1 --l3csum 1 --dmac "ae:21:14:4b:3a:6d" --time 10
+```
+
+
 ## Configuration
 This program parses config files using the YAML [syntax](https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html). If no config file is specified with the `-c` or `--cfg` arguments, it will execute `/etc/pcktseq/config.yml` by default.
 
