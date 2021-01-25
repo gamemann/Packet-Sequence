@@ -7,7 +7,7 @@ This C program/tool for Linux allows you to specify one or more sequences inside
 ## Requirements
 * [libyaml](https://github.com/yaml/libyaml) - A C library for parsing YAML config files.
 
-## Command-Line Usage
+## Basic Command Line Usage
 You may append `-h` when executing the application to see what command line parameters you may use. Please see below:
 
 ```
@@ -21,7 +21,7 @@ Usage: pcktseq -c <configfile> [-v -h]
 
 [![demonstration](https://g.gflclan.com/3536-11-02-2020-0v94za6v.png)](https://www.youtube.com/watch?v=pLg_WMqwgzg)
 
-## Sequence Command Line Options
+## Sequence Command Line Usage
 There are command line options to replace all values within sequence #0. To use these, first, you'll need to specify the `-z` or `--cli` flag. Afterwards, you may use the following (all related to sequence #0).
 
 ```
