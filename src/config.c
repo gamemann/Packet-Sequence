@@ -17,7 +17,7 @@
  * @param seqnum A pointer to the current sequence # (starting from 0).
  * @return Returns 0 on success and 1 on failure.
  */
-int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seqnum)
+int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seqnum, uint8_t log)
 {
     // Attempt to open config file.
     FILE *fp = fopen(filename, "r");
@@ -25,7 +25,10 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
     // Check if file pointer is valid.
     if (fp == NULL)
     {
-        fprintf(stderr, "Error opening YAML config file (%s) :: %s.\n", filename, strerror(errno));
+        if (log)
+        {
+            fprintf(stderr, "Error opening YAML config file (%s) :: %s.\n", filename, strerror(errno));
+        }
 
         return 1;
     }
@@ -37,7 +40,10 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
     // Initialize parser.
     if (!yaml_parser_initialize(&parser))
     {
-        fprintf(stderr, "Error initializing YAML parser (#%d) :: %s.\n", parser.error, strerror(errno));
+        if (log)
+        {
+            fprintf(stderr, "Error initializing YAML parser (#%d) :: %s.\n", parser.error, strerror(errno));
+        }
 
         return 1;
     }
@@ -76,7 +82,10 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
         // Keep scanning.
         if (!yaml_parser_parse(&parser, &ev))
         {
-            fprintf(stderr, "Error parsing YAML file (#%d) :: %s.\n", parser.error, strerror(errno));
+            if (log)
+            {
+                fprintf(stderr, "Error parsing YAML file (#%d) :: %s.\n", parser.error, strerror(errno));
+            }
 
             return 1;
         }
@@ -288,7 +297,7 @@ int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seq
                             cfg->seq[*seqnum].includes[cfg->seq[*seqnum].includecount] = strdup((const char *)ev.data.scalar.value);
 
                             // We're going to parse the include here. The 'includes' MUST be at the beginning of the sequence. Otherwise, it will overwrite the current sequence values.
-                            parseconfig(cfg->seq[*seqnum].includes[cfg->seq[*seqnum].includecount], cfg, 1, seqnum);
+                            parseconfig(cfg->seq[*seqnum].includes[cfg->seq[*seqnum].includecount], cfg, 1, seqnum, 1);
 
                             // Increment count.
                             cfg->seq[*seqnum].includecount++;

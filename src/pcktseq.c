@@ -53,7 +53,21 @@ int main(int argc, char *argv[])
     }
 
     // Attempt to parse config.
-    parseconfig(cmd.config, &cfg, 0, &seqc);
+    uint8_t log = 1;
+
+    if (cmd.cli)
+    {
+        fprintf(stdout, "Using command line...\n");
+        log = 0;    
+    }
+
+    parseconfig(cmd.config, &cfg, 0, &seqc, log);
+
+    if (cmd.cli)
+    {
+        parsecli(&cmd, &cfg);
+        seqc++;
+    }
 
     // Check for list option.
     if (cmd.list)

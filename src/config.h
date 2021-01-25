@@ -119,5 +119,5 @@ struct config
     struct sequence seq[MAXSEQUENCES];
 };
 
-int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seqnum);
+int parseconfig(const char filename[], struct config *cfg, int onlyseq, int *seqnum, uint8_t log);
 void clearsequence(struct config *cfg, int seqnum);
