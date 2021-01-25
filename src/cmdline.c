@@ -103,6 +103,7 @@ void parsecli(struct cmdline *cmd, struct config *cfg)
         if (strstr(cmd->clsrcip, "/") != NULL)
         {
             cfg->seq[0].ip.srcip = 0;
+            cfg->seq[0].ip.rangecount = 1;
             cfg->seq[0].ip.ranges[0] = cmd->clsrcip;
         }
         else
