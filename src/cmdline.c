@@ -380,17 +380,17 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
                     break;
 
                 case 37:
-                    cmd->clicmpcode = atoi(optarg);
+                    cmd->clplstring = atoi(optarg);
 
                     break;
 					
                 case 38:
-                    cmd->clicmptype = atoi(optarg);
+                    cmd->clicmpcode = atoi(optarg);
 
                     break;
 					
                 case 39:
-                    cmd->clplstring = atoi(optarg);
+                    cmd->clicmptype = atoi(optarg);
 
                     break;
 
