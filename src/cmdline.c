@@ -49,6 +49,9 @@ static struct option longopts[] =
     {"turg", required_argument, NULL, 30},
     {"tusecooked", required_argument, NULL, 31},
 
+    {"icode", required_argument, NULL, 38},
+    {"itype", required_argument, NULL, 39},
+
     {"pmin", required_argument, NULL, 32},
     {"pmax", required_argument, NULL, 33},
     {"pstatic", required_argument, NULL, 34},
@@ -378,6 +381,16 @@ void parsecmdline(int argc, char *argv[], struct cmdline *cmd)
 
                 case 37:
                     cmd->clplstring = atoi(optarg);
+
+                    break;
+					
+                case 38:
+                    cmd->clicmpcode = atoi(optarg);
+
+                    break;
+					
+                case 39:
+                    cmd->clicmptype = atoi(optarg);
 
                     break;
 
