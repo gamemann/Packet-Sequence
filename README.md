@@ -1,4 +1,9 @@
 # Packet Sequence Program
+## Packet Batch (New Project Based Off Of Packet Sequence)
+[Packet Batch](https://github.com/Packet-Batch) is a newer project based off of Packet Sequence. It has more organization and supports special versions utilizing AF_XDP sockets and the DPDK which is **a lot** faster than what Packet Sequence uses (AF_PACKETv3 sockets). 
+
+I would strongly suggest checking it out!
+
 ## Description
 This C program/tool for Linux allows you to specify one or more sequences inside a YAML config file to send outbound packets to a specific destination. Each sequence can modify many fields inside of the packet and supports many randomized values such as payloads, payload min/max length, source IP ranges (in CIDR), and more.
 
