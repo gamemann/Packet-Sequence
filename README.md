@@ -24,7 +24,7 @@ Usage: pcktseq -c <configfile> [-v -h]
 -h --help => Print out help menu and exit program.
 ```
 
-[![demonstration](https://g.gflclan.com/3536-11-02-2020-0v94za6v.png)](https://www.youtube.com/watch?v=pLg_WMqwgzg)
+[![demonstration](https://i.imgur.com/FxqpjpW.png)](https://www.youtube.com/watch?v=pLg_WMqwgzg)
 
 ## Sequence Command Line Usage
 There are command line options to replace all values within sequence #0. To use these, first, you'll need to specify the `-z` or `--cli` flag. Afterwards, you may use the following (all related to sequence #0).
@@ -335,7 +335,7 @@ This config resulted in my source VM sending **50 - 60 gbps** to my destination 
 ### Gaming Laptop Running Ubuntu 20.04 Desktop
 I was able to generate **~905 gbps** between two virtual interfaces on my [gaming laptop](https://www.newegg.com/fortress-gray-asus-tuf-gaming-tuf706iu-as76-gaming-entertainment/p/N82E16834235407) using the `tests/simple_udp_flood.yaml` config. As expected, this didn't use the laptop's NIC, but it shows how much the CPU, RAM, and NVMe can push out.
 
-![Laptop Benchmark](https://g.gflclan.com/linux-laptop-bigmode-14-14-45.png)
+![Laptop Benchmark](https://i.imgur.com/dMNZ0SA.png)
 
 ## Additional Notes
 **Note #1** - This program is still in development and I am working to add more features while maintaining high performance. The outbound packet functionality is fully operational. I'm hoping to turn this tool into a network monitor tool by implementing sequence types that can receive specific packets and use the response in later sequences. With that said, I'd like to add an option to send HTTP/HTTPS requests if a receive sequence succeeds or fails after a specific timeout.
